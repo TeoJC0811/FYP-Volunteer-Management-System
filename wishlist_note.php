@@ -18,7 +18,7 @@ if (!$wishlistID || !$userID) {
 }
 
 // SECURE UPDATE: Ensure the wishlist item actually belongs to the logged-in user
-$stmt = $conn->prepare("UPDATE Wishlist SET note = ? WHERE wishlistID = ? AND userID = ?");
+$stmt = $conn->prepare("UPDATE wishlist SET note = ? WHERE wishlistID = ? AND userID = ?");
 $stmt->bind_param("sii", $note, $wishlistID, $userID);
 
 if ($stmt->execute()) {

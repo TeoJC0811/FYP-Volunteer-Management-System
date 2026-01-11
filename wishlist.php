@@ -35,7 +35,7 @@ $sqlEvent = "SELECT
             cat1.categoryName AS eventCategory,
             e.eventLocation, e.eventCountry,
             e.startDate, e.endDate
-        FROM Wishlist w
+        FROM wishlist w
         JOIN event e ON w.eventID = e.eventID
         LEFT JOIN category cat1 ON e.categoryID = cat1.categoryID
         WHERE w.userID = ?
@@ -57,7 +57,7 @@ $sqlCourse = "SELECT
             c.startDate, c.endDate,
             c.courseLocation,
             c.courseCountry
-        FROM Wishlist w
+        FROM wishlist w
         JOIN course c ON w.courseID = c.courseID
         LEFT JOIN category cat2 ON c.categoryID = cat2.categoryID
         WHERE w.userID = ?
