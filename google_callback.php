@@ -8,14 +8,18 @@ use Google\Service\Oauth2;
 
 /*
 |--------------------------------------------------------------------------
-| DYNAMIC BASE URL (LOCALHOST = http, NGROK = https)
+| DYNAMIC BASE URL (Handles Local vs Render)
 |--------------------------------------------------------------------------
 */
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $isLocal = in_array($host, ['localhost', '127.0.0.1']);
-
 $scheme = $isLocal ? 'http' : 'https';
-$baseUrl = $scheme . '://' . $host . '/servetogether';
+
+if ($isLocal) {
+    $baseUrl = $scheme . '://' . $host . '/servetogether';
+} else {
+    $baseUrl = $scheme . '://' . $host; // No subfolder on Render
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -24,9 +28,11 @@ $baseUrl = $scheme . '://' . $host . '/servetogether';
 */
 $client = new Client();
 $client->setClientId('147195553585-4sj8v86c32216duh7jhn1jco1grt57lh.apps.googleusercontent.com');
-$client->setClientSecret('REPLACE_WITH_YOUR_SECRET_ON_SERVER');
 
-/* MUST match redirect URI used in google_login.php */
+// ⚠️ REPLACE THIS with your actual secret ending in TSUL
+$client->setClientSecret('YOUR_ACTUAL_SECRET_ENDING_IN_TSUL');
+
+/* MUST match the logic used in google_login.php */
 $client->setRedirectUri($baseUrl . '/google_callback.php');
 
 $client->addScope('email');
@@ -49,6 +55,7 @@ if (!isset($_GET['code'])) {
 $token = $client->fetchAccessTokenWithAuthCode($_GET['code']);
 
 if (isset($token['error'])) {
+    // This is where 'invalid_client' was being caught
     die("⚠️ Google authentication error: " . htmlspecialchars($token['error']));
 }
 
@@ -73,6 +80,7 @@ if (empty($email)) {
 |--------------------------------------------------------------------------
 | LOGIN OR REGISTER USER
 |--------------------------------------------------------------------------
+| Note: Check your table name case! (user vs User)
 */
 $stmt = $conn->prepare("SELECT userID, userName, userRoles FROM user WHERE userEmail = ?");
 $stmt->bind_param("s", $email);
@@ -80,13 +88,11 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
-    // Existing user
     $user = $result->fetch_assoc();
     $_SESSION['userID']   = (int)$user['userID'];
     $_SESSION['userName'] = $user['userName'];
     $_SESSION['role']     = $user['userRoles'];
 } else {
-    // New Google user
     $insert = $conn->prepare("
         INSERT INTO user (userName, userEmail, password, userRoles)
         VALUES (?, ?, '', 'user')
@@ -101,32 +107,13 @@ if ($result->num_rows > 0) {
 
 /*
 |--------------------------------------------------------------------------
-| ✅ RESUME QR CHECK-IN (TOP PRIORITY)
+| REDIRECTS
 |--------------------------------------------------------------------------
 */
 if (isset($_SESSION['pending_checkin']) && is_array($_SESSION['pending_checkin'])) {
     $query = http_build_query($_SESSION['pending_checkin']);
-
-    // Clear redirect flags to avoid conflicts
-    unset(
-        $_SESSION['pending_checkin'],
-        $_SESSION['oauth_redirect'],
-        $_SESSION['redirect_after_login']
-    );
-
+    unset($_SESSION['pending_checkin'], $_SESSION['oauth_redirect'], $_SESSION['redirect_after_login']);
     header("Location: $baseUrl/checkin.php?$query");
-    exit;
-}
-
-/*
-|--------------------------------------------------------------------------
-| NORMAL REDIRECT
-|--------------------------------------------------------------------------
-*/
-if (!empty($_SESSION['oauth_redirect'])) {
-    $redirect = $_SESSION['oauth_redirect'];
-    unset($_SESSION['oauth_redirect'], $_SESSION['redirect_after_login']);
-    header("Location: $redirect");
     exit;
 }
 
