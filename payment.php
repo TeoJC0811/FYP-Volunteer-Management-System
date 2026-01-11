@@ -22,7 +22,7 @@ $errorMessage = "";
 /* ==========================
     ANTI-SABOTAGE / STRIKE CHECK
 ========================== */
-$countStmt = $conn->prepare("SELECT COUNT(*) as total FROM CourseRegistration WHERE userID = ? AND courseID = ? AND registrationStatus = 'withdrawn'");
+$countStmt = $conn->prepare("SELECT COUNT(*) as total FROM courseregistration WHERE userID = ? AND courseID = ? AND registrationStatus = 'withdrawn'");
 $countStmt->bind_param("ii", $userID, $courseID);
 $countStmt->execute();
 $withdrawCount = $countStmt->get_result()->fetch_assoc()['total'];
@@ -88,7 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && empty($errorMessage)) {
         $receiptPath = $uploadDir . $newFileName;
 
         if (move_uploaded_file($_FILES["receipt"]["tmp_name"], $receiptPath)) {
-            $regSQL = "INSERT INTO CourseRegistration (registrationDate, status, registrationStatus, userID, courseID) 
+            $regSQL = "INSERT INTO courseregistration (registrationDate, status, registrationStatus, userID, courseID) 
                        VALUES (NOW(), 'pending', 'active', ?, ?)
                        ON DUPLICATE KEY UPDATE registrationDate=NOW(), status='pending', registrationStatus='active'";
             $regStmt = $conn->prepare($regSQL);
@@ -97,13 +97,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && empty($errorMessage)) {
             if ($regStmt->execute()) {
                 $courseRegisterID = $conn->insert_id ?: 0;
                 if($courseRegisterID == 0) {
-                    $findId = $conn->prepare("SELECT courseRegisterID FROM CourseRegistration WHERE userID = ? AND courseID = ?");
+                    $findId = $conn->prepare("SELECT courseRegisterID FROM courseregistration WHERE userID = ? AND courseID = ?");
                     $findId->bind_param("ii", $userID, $courseID);
                     $findId->execute();
                     $courseRegisterID = $findId->get_result()->fetch_assoc()['courseRegisterID'];
                 }
 
-                $paySQL = "INSERT INTO CoursePayment (paymentStatus, receiptImage, userID, courseRegisterID) VALUES ('pending', ?, ?, ?)";
+                $paySQL = "INSERT INTO coursepayment (paymentStatus, receiptImage, userID, courseRegisterID) VALUES ('pending', ?, ?, ?)";
                 $payStmt = $conn->prepare($paySQL);
                 $payStmt->bind_param("sii", $receiptPath, $userID, $courseRegisterID);
                 $payStmt->execute();

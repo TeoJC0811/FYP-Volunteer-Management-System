@@ -10,8 +10,8 @@ $nextWeek = date("Y-m-d", strtotime("+7 days"));
 // (Removed template table; use eventName instead)
 $sql = "
     SELECT er.userID, ev.eventID, ev.startDate, ev.eventName
-    FROM EventRegistration er
-    JOIN Event ev ON er.eventID = ev.eventID
+    FROM eventregistration er
+    JOIN event ev ON er.eventID = ev.eventID
     WHERE ev.startDate BETWEEN ? AND ?
 ";
 $stmt = $conn->prepare($sql);
@@ -23,8 +23,8 @@ $events = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 // (Removed template table; use courseName instead)
 $sql = "
     SELECT cr.userID, co.courseID, co.courseDate, co.courseName
-    FROM CourseRegistration cr
-    JOIN Course co ON cr.courseID = co.courseID
+    FROM courseregistration cr
+    JOIN course co ON cr.courseID = co.courseID
     WHERE co.courseDate BETWEEN ? AND ?
 ";
 $stmt = $conn->prepare($sql);

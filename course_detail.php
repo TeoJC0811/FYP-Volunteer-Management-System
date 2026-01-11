@@ -11,7 +11,7 @@ $courseID = intval($_GET['id']);
 $userID = $_SESSION['userID'] ?? null;
 
 /* ✅ Fetch course details FIRST */
-$sql = "SELECT * FROM Course WHERE courseID = ?";
+$sql = "SELECT * FROM course WHERE courseID = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $courseID);
 $stmt->execute();
@@ -33,7 +33,7 @@ if (!empty($course['organizerID'])) {
 /* ✅ Anti-Sabotage Logic: Count withdrawals for strikes */
 $withdrawCount = 0;
 if ($userID) {
-    $countStmt = $conn->prepare("SELECT COUNT(*) as total FROM CourseRegistration WHERE userID = ? AND courseID = ? AND registrationStatus = 'withdrawn'");
+    $countStmt = $conn->prepare("SELECT COUNT(*) as total FROM courseregistration WHERE userID = ? AND courseID = ? AND registrationStatus = 'withdrawn'");
     $countStmt->bind_param("ii", $userID, $courseID);
     $countStmt->execute();
     $withdrawCount = $countStmt->get_result()->fetch_assoc()['total'];
@@ -60,8 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['join_course'])) {
         SELECT activityName FROM (
             -- Check Other Registered Courses
             SELECT c.courseName AS activityName, c.startDate, c.endDate 
-            FROM CourseRegistration cr
-            JOIN Course c ON cr.courseID = c.courseID
+            FROM courseRegistration cr
+            JOIN course c ON cr.courseID = c.courseID
             WHERE cr.userID = ? AND cr.registrationStatus = 'active'
             
             UNION ALL
@@ -103,14 +103,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['withdraw_course'])) {
 // ✅ Check if User Registered and Active
 $isRegistered = false;
 if ($userID) {
-    $checkReg = $conn->prepare("SELECT 1 FROM CourseRegistration WHERE userID = ? AND courseID = ? AND registrationStatus = 'active' LIMIT 1");
+    $checkReg = $conn->prepare("SELECT 1 FROM courseregistration WHERE userID = ? AND courseID = ? AND registrationStatus = 'active' LIMIT 1");
     $checkReg->bind_param("ii", $userID, $courseID);
     $checkReg->execute();
     $isRegistered = $checkReg->get_result()->num_rows > 0;
 }
 
 // ✅ Participant Count (Active only)
-$sqlCount = $conn->prepare("SELECT COUNT(*) AS total FROM CourseRegistration WHERE courseID = ? AND registrationStatus = 'active'");
+$sqlCount = $conn->prepare("SELECT COUNT(*) AS total FROM courseregistration WHERE courseID = ? AND registrationStatus = 'active'");
 $sqlCount->bind_param("i", $courseID);
 $sqlCount->execute();
 $participantCount = $sqlCount->get_result()->fetch_assoc()['total'] ?? 0;
@@ -159,7 +159,7 @@ $stmt2->bind_param("iii", $courseID, $reviewsPerPage, $offset);
 $stmt2->execute();
 $reviews = $stmt2->get_result();
 
-$pastCourseQuery = "SELECT c.courseID, c.courseName, c.coverImage, c.startDate FROM coursePast cp JOIN Course c ON cp.pastCourseID = c.courseID WHERE cp.courseID = ?";
+$pastCourseQuery = "SELECT c.courseID, c.courseName, c.coverImage, c.startDate FROM coursePast cp JOIN course c ON cp.pastCourseID = c.courseID WHERE cp.courseID = ?";
 $pastStmt = $conn->prepare($pastCourseQuery);
 $pastStmt->bind_param("i", $courseID);
 $pastStmt->execute();

@@ -18,7 +18,7 @@ $userID = $_SESSION['userID'];
 
 // Handle post deletion (only owner can delete)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_forum'])) {
-    $del = $conn->prepare("DELETE FROM Forum WHERE forumID = ? AND userID = ?");
+    $del = $conn->prepare("DELETE FROM forum WHERE forumID = ? AND userID = ?");
     $del->bind_param("ii", $forumID, $userID);
     $del->execute();
     header("Location: community_forum.php");
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_forum'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_forum'])) {
     $newContent = trim($_POST['forum_content']);
     if (!empty($newContent)) {
-        $stmt = $conn->prepare("UPDATE Forum SET content = ? WHERE forumID = ? AND userID = ?");
+        $stmt = $conn->prepare("UPDATE forum SET content = ? WHERE forumID = ? AND userID = ?");
         $stmt->bind_param("sii", $newContent, $forumID, $userID);
         $stmt->execute();
         header("Location: view_forum.php?id=$forumID");
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_comment'])) {
 // Fetch forum post - includes forumImage
 $sql = "
     SELECT f.forumID, f.title, f.content, f.forumImage, f.createdDate, f.userID, u.userName
-    FROM Forum f
+    FROM forum f
     JOIN User u ON f.userID = u.userID
     WHERE f.forumID = ?
     LIMIT 1
@@ -68,7 +68,7 @@ if (!$forum) {
 // Fetch tags
 $tagResult = $conn->prepare("
     SELECT t.tagName
-    FROM ForumTag ft
+    FROM forumtag ft
     JOIN Tag t ON ft.tagID = t.tagID
     WHERE ft.forumID = ?
 ");
@@ -92,7 +92,7 @@ $commentCount = $comments->num_rows;
 // Fetch votes
 $voteResult = $conn->prepare("
     SELECT COALESCE(SUM(voteValue),0) as totalVotes
-    FROM ForumVote
+    FROM forumvote
     WHERE forumID = ?
 ");
 $voteResult->bind_param("i", $forumID);

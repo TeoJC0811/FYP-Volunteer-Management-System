@@ -8,7 +8,7 @@ if (!isset($_SESSION['userID'])) {
 }
 
 // Fetch tags
-$tagResult = $conn->query("SELECT * FROM Tag ORDER BY tagName ASC");
+$tagResult = $conn->query("SELECT * FROM tag ORDER BY tagName ASC");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title']);
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // --- Insert forum using Prepared Statement (Saves NULL properly) ---
-    $stmt = $conn->prepare("INSERT INTO Forum (title, content, forumImage, userID) VALUES (?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO forum (title, content, forumImage, userID) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("sssi", $title, $content, $forumImage, $userID);
     
     if ($stmt->execute()) {
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Insert the selected tag (only if chosen)
         if ($tagID > 0) {
-            $stmtTag = $conn->prepare("INSERT INTO ForumTag (forumID, tagID) VALUES (?, ?)");
+            $stmtTag = $conn->prepare("INSERT INTO forumtag (forumID, tagID) VALUES (?, ?)");
             $stmtTag->bind_param("ii", $forumID, $tagID);
             $stmtTag->execute();
             $stmtTag->close();

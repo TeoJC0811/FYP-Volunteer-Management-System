@@ -38,7 +38,7 @@ if (!empty($event['organizerID'])) {
 /* ✅ Anti-Sabotage Logic: Count withdrawals for this specific user and event */
 $withdrawCount = 0;
 if ($userID) {
-    $countStmt = $conn->prepare("SELECT COUNT(*) as total FROM EventRegistration WHERE userID = ? AND eventID = ? AND registrationStatus = 'withdrawn'");
+    $countStmt = $conn->prepare("SELECT COUNT(*) as total FROM eventregistration WHERE userID = ? AND eventID = ? AND registrationStatus = 'withdrawn'");
     $countStmt->bind_param("ii", $userID, $eventID);
     $countStmt->execute();
     $withdrawCount = $countStmt->get_result()->fetch_assoc()['total'];
@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['join_event'])) {
     }
 
     // Check if already joined and active
-    $check = $conn->prepare("SELECT 1 FROM EventRegistration WHERE userID = ? AND eventID = ? AND registrationStatus = 'active'");
+    $check = $conn->prepare("SELECT 1 FROM eventregistration WHERE userID = ? AND eventID = ? AND registrationStatus = 'active'");
     $check->bind_param("ii", $userID, $eventID);
     $check->execute();
     
@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['join_event'])) {
                 -- Check Other Registered Events
                 SELECT e.eventName AS activityName, e.startDate, e.endDate 
                 FROM EventRegistration er
-                JOIN Event e ON er.eventID = e.eventID
+                JOIN event e ON er.eventID = e.eventID
                 WHERE er.userID = ? AND er.registrationStatus = 'active'
                 
                 UNION ALL
@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['join_event'])) {
             echo "<script>alert('❌ Schedule Conflict! You are already registered for: \"" . addslashes($conflict['activityName']) . "\" during this same period.');</script>";
         } else {
             // INSERT or RE-ACTIVATE Registration
-            $insert = $conn->prepare("INSERT INTO EventRegistration (userID, eventID, registrationStatus, status, registrationDate) 
+            $insert = $conn->prepare("INSERT INTO eventregistration (userID, eventID, registrationStatus, status, registrationDate) 
                                     VALUES (?, ?, 'active', 'Pending', NOW()) 
                                     ON DUPLICATE KEY UPDATE registrationStatus='active', status='Pending', registrationDate=NOW()");
             $insert->bind_param("ii", $userID, $eventID);
@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['join_event'])) {
 
 // ✅ Handle Withdrawal (Soft delete by changing registrationStatus)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['withdraw_event'])) {
-    $update = $conn->prepare("UPDATE EventRegistration SET registrationStatus = 'withdrawn' WHERE userID = ? AND eventID = ?");
+    $update = $conn->prepare("UPDATE eventregistration SET registrationStatus = 'withdrawn' WHERE userID = ? AND eventID = ?");
     $update->bind_param("ii", $userID, $eventID);
     if ($update->execute()) {
         $newStrikeCount = $withdrawCount + 1;
@@ -130,7 +130,7 @@ $imagePath = !empty($event['coverImage'])
 
 
 /* ✅ Participant Count (Count Active Only) */
-$sqlCount = $conn->prepare("SELECT COUNT(*) AS total FROM EventRegistration WHERE eventID = ? AND registrationStatus = 'active'");
+$sqlCount = $conn->prepare("SELECT COUNT(*) AS total FROM eventregistration WHERE eventID = ? AND registrationStatus = 'active'");
 $sqlCount->bind_param("i", $eventID);
 $sqlCount->execute();
 $countResult = $sqlCount->get_result();
@@ -143,7 +143,7 @@ $isFull = $participantCount >= ($event['maxParticipant'] ?? 0);
 /* ✅ Check if User Registered and Active */
 $isRegistered = false;
 if ($userID) {
-    $checkReg = $conn->prepare("SELECT 1 FROM EventRegistration WHERE userID = ? AND eventID = ? AND registrationStatus = 'active' LIMIT 1");
+    $checkReg = $conn->prepare("SELECT 1 FROM eventregistration WHERE userID = ? AND eventID = ? AND registrationStatus = 'active' LIMIT 1");
     $checkReg->bind_param("ii", $userID, $eventID);
     $checkReg->execute();
     $regResult = $checkReg->get_result();
@@ -163,7 +163,7 @@ if ($userID) {
 }
 
 /* ✅ Fetch Gallery */
-$sqlGallery = "SELECT imageUrl, caption FROM activityGallery WHERE activityType = 'event' AND activityID = ?";
+$sqlGallery = "SELECT imageUrl, caption FROM activitygallery WHERE activityType = 'event' AND activityID = ?";
 $stmtGallery = $conn->prepare($sqlGallery);
 $stmtGallery->bind_param("i", $eventID);
 $stmtGallery->execute();

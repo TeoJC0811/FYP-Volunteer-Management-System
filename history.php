@@ -35,9 +35,9 @@ SELECT
     e.endDate,
     e.coverImage,
     r.reviewID
-FROM EventRegistration er
-JOIN Event e ON er.eventID = e.eventID
-LEFT JOIN Review r 
+FROM eventregistration er
+JOIN event e ON er.eventID = e.eventID
+LEFT JOIN review r 
     ON r.activityType = 'event'
     AND r.activityID = e.eventID
     AND r.userID = er.userID
@@ -65,9 +65,9 @@ SELECT
     c.endDate,
     c.coverImage,
     r.reviewID
-FROM CourseRegistration cr
-JOIN Course c ON cr.courseID = c.courseID
-LEFT JOIN Review r 
+FROM courseregistration cr
+JOIN course c ON cr.courseID = c.courseID
+LEFT JOIN review r 
     ON r.activityType = 'course'
     AND r.activityID = c.courseID
     AND r.userID = cr.userID
