@@ -124,7 +124,7 @@ $disableButton = ($isFull || $isDeadlinePassed);
 // ✅ Wishlist Check
 $isWishlisted = false;
 if ($userID) {
-    $wishStmt = $conn->prepare("SELECT 1 FROM Wishlist WHERE userID = ? AND courseID = ? LIMIT 1");
+    $wishStmt = $conn->prepare("SELECT 1 FROM wishlist WHERE userID = ? AND courseID = ? LIMIT 1");
     $wishStmt->bind_param("ii", $userID, $courseID);
     $wishStmt->execute();
     $isWishlisted = $wishStmt->get_result()->num_rows > 0;
@@ -143,7 +143,7 @@ $page = isset($_GET['review_page']) && is_numeric($_GET['review_page']) ? intval
 $reviewsPerPage = 5;
 $offset = ($page - 1) * $reviewsPerPage;
 
-$avgSQL = "SELECT AVG(rating) AS avgRating, COUNT(*) AS totalReviews FROM Review WHERE activityType = 'course' AND activityID = ?";
+$avgSQL = "SELECT AVG(rating) AS avgRating, COUNT(*) AS totalReviews FROM review WHERE activityType = 'course' AND activityID = ?";
 $avgStmt = $conn->prepare($avgSQL);
 $avgStmt->bind_param("i", $courseID);
 $avgStmt->execute();
@@ -153,7 +153,7 @@ $avgRating = round($avgResult['avgRating'] ?? 0, 1);
 $totalReviews = $avgResult['totalReviews'] ?? 0;
 $totalPages = ceil($totalReviews / $reviewsPerPage);
 
-$sqlReviews = "SELECT r.rating, r.comment, r.reviewDate, u.userName FROM Review r JOIN User u ON r.userID = u.userID WHERE r.activityType = 'course' AND r.activityID = ? ORDER BY r.reviewDate DESC LIMIT ? OFFSET ?";
+$sqlReviews = "SELECT r.rating, r.comment, r.reviewDate, u.userName FROM review r JOIN User u ON r.userID = u.userID WHERE r.activityType = 'course' AND r.activityID = ? ORDER BY r.reviewDate DESC LIMIT ? OFFSET ?";
 $stmt2 = $conn->prepare($sqlReviews);
 $stmt2->bind_param("iii", $courseID, $reviewsPerPage, $offset);
 $stmt2->execute();

@@ -185,7 +185,7 @@ html, body { height: 100%; margin: 0; display: flex; flex-direction: column; }
                 $isWishlisted = false;
                 if ($userID) {
                     $wishCheck = $conn->query(
-                        "SELECT 1 FROM Wishlist 
+                        "SELECT 1 FROM wishlist 
                          WHERE userID='".intval($userID)."' 
                          AND courseID='".$row['courseID']."' 
                          LIMIT 1"

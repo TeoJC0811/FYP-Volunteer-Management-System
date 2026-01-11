@@ -48,8 +48,8 @@ $sql = "
         c.fee,
         u.userName AS organizerName,
         u.qrCodeUrl
-    FROM Course c
-    JOIN User u ON c.organizerID = u.userID
+    FROM course c
+    JOIN user u ON c.organizerID = u.userID
     WHERE c.courseID = ?
 ";
 $stmt = $conn->prepare($sql);
