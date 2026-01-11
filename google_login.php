@@ -6,13 +6,19 @@ session_start();
 |--------------------------------------------------------------------------
 | DYNAMIC BASE URL
 |--------------------------------------------------------------------------
+| Logic to handle both Localhost (with subfolder) and Render (root)
 */
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $isLocal = in_array($host, ['localhost', '127.0.0.1']);
 $scheme = $isLocal ? 'http' : 'https';
 
-// Adjust this folder name if your project folder is different
-$baseUrl = $scheme . '://' . $host . '/servetogether';
+if ($isLocal) {
+    // Your local path with the subfolder
+    $baseUrl = $scheme . '://' . $host . '/servetogether';
+} else {
+    // Your Render path (No subfolder)
+    $baseUrl = $scheme . '://' . $host;
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -21,7 +27,15 @@ $baseUrl = $scheme . '://' . $host . '/servetogether';
 */
 $client = new Google_Client();
 $client->setClientId('147195553585-4sj8v86c32216duh7jhn1jco1grt57lh.apps.googleusercontent.com');
-$client->setClientSecret('REPLACE_WITH_YOUR_SECRET_ON_SERVER');
+
+/**
+ * ⚠️ ACTION REQUIRED: 
+ * Replace 'YOUR_ACTUAL_GOOGLE_SECRET' with your real Client Secret 
+ * from the Google Cloud Console.
+ */
+$client->setClientSecret('YOUR_ACTUAL_GOOGLE_SECRET');
+
+// This will now correctly be: https://servetogetherfyp.onrender.com/google_callback.php
 $client->setRedirectUri($baseUrl . '/google_callback.php');
 
 $client->addScope('email');
@@ -32,7 +46,6 @@ $client->setPrompt('select_account');
 |--------------------------------------------------------------------------
 | QR CHECK-IN INTEGRATION
 |--------------------------------------------------------------------------
-| If the user was redirected here from a QR code, preserve that URL
 */
 if (!empty($_GET['redirect'])) {
     $_SESSION['redirect_after_login'] = $_GET['redirect'];

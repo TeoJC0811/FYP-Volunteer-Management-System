@@ -9,7 +9,7 @@ $categoryResult = $conn->query("SELECT * FROM category ORDER BY categoryName ASC
 
 // Get ENUM values for country
 $countries = [];
-$countryEnumResult = $conn->query("SHOW COLUMNS FROM Course LIKE 'courseCountry'");
+$countryEnumResult = $conn->query("SHOW COLUMNS FROM course LIKE 'courseCountry'");
 if ($countryEnumResult && $countryRow = $countryEnumResult->fetch_assoc()) {
     if (!empty($countryRow['Type'])) {
         preg_match_all("/'([^']+)'/", $countryRow['Type'], $countryMatches);
@@ -144,7 +144,7 @@ html, body { height: 100%; margin: 0; display: flex; flex-direction: column; }
                 c.*,
                 cat.categoryName,
                 CASE WHEN uc.categoryID IS NOT NULL THEN 1 ELSE 0 END AS isInterested
-            FROM Course c
+            FROM course c
             LEFT JOIN category cat ON c.categoryID = cat.categoryID
             LEFT JOIN usercategory uc 
                 ON uc.categoryID = c.categoryID 
