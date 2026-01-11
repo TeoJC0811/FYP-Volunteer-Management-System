@@ -189,7 +189,7 @@ if (isset($_GET['error'])) $error = htmlspecialchars(urldecode($_GET['error']));
 ===================================================== */
 $sql = "SELECT cr.courseRegisterID, cr.registrationDate, cr.status, u.userName, cp.paymentStatus, cp.receiptImage
         FROM courseregistration cr
-        JOIN User u ON cr.userID = u.userID
+        JOIN user u ON cr.userID = u.userID
         LEFT JOIN coursepayment cp ON cr.courseRegisterID = cp.courseRegisterID
         WHERE cr.courseID = ?";
 $params = [$selectedCourse];

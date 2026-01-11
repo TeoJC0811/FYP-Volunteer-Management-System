@@ -44,7 +44,7 @@ if (isset($_GET['delete'])) {
 $filterRole = isset($_GET['role']) ? $_GET['role'] : 'all';
 $searchQuery = isset($_GET['search']) ? trim($_GET['search']) : "";
 
-$sql = "SELECT * FROM User WHERE 1=1";
+$sql = "SELECT * FROM user WHERE 1=1";
 $params = [];
 $types = "";
 

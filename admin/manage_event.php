@@ -95,7 +95,7 @@ $filterStatus   = $_GET['status']   ?? "all";
     FETCH CATEGORY LIST
     ========================== */
 $categories = [];
-$resCat = $conn->query("SELECT categoryID, categoryName FROM Category ORDER BY categoryName ASC");
+$resCat = $conn->query("SELECT categoryID, categoryName FROM category ORDER BY categoryName ASC");
 while ($row = $resCat->fetch_assoc()) { $categories[] = $row; }
 $resCat->close(); 
 

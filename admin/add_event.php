@@ -19,7 +19,7 @@ $categories = [];
     FETCH ENUMS & LISTS
 ========================== */
 // Get Country Enum
-$countryEnumResult = $conn->query("SHOW COLUMNS FROM Event LIKE 'eventCountry'");
+$countryEnumResult = $conn->query("SHOW COLUMNS FROM event LIKE 'eventCountry'");
 if ($countryEnumResult && $countryRow = $countryEnumResult->fetch_assoc()) {
     preg_match_all("/'([^']+)'/", $countryRow['Type'], $matches);
     $countries = $matches[1] ?? [];

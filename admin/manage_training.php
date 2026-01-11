@@ -76,7 +76,7 @@ $filterStatus   = $_GET['status']   ?? "all";
     FETCH CATEGORY LIST
     ========================== */
 $categories = [];
-$resCat = $conn->query("SELECT categoryID, categoryName FROM Category ORDER BY categoryName ASC");
+$resCat = $conn->query("SELECT categoryID, categoryName FROM category ORDER BY categoryName ASC");
 while ($row = $resCat->fetch_assoc()) { $categories[] = $row; }
 $resCat->close(); 
 
@@ -90,11 +90,11 @@ $todayStr = date('Y-m-d');
 $enrollmentSubquery = "(SELECT COUNT(*) FROM courseregistration cr WHERE cr.courseID = c.courseID) AS currentEnrollment";
 
 if ($role === 'organizer') {
-    $sql = "SELECT c.*, cat.categoryName, {$enrollmentSubquery} FROM Course c LEFT JOIN Category cat ON c.categoryID = cat.categoryID WHERE c.organizerID = ?";
+    $sql = "SELECT c.*, cat.categoryName, {$enrollmentSubquery} FROM course c LEFT JOIN category cat ON c.categoryID = cat.categoryID WHERE c.organizerID = ?";
     $params[] = $userID;
     $paramTypes .= "i";
 } else {
-    $sql = "SELECT c.*, cat.categoryName, {$enrollmentSubquery} FROM Course c LEFT JOIN Category cat ON c.categoryID = cat.categoryID WHERE 1";
+    $sql = "SELECT c.*, cat.categoryName, {$enrollmentSubquery} FROM course c LEFT JOIN category cat ON c.categoryID = cat.categoryID WHERE 1";
 }
 
 // Status Filter logic for Date Ranges
