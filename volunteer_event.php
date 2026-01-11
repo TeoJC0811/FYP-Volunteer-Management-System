@@ -290,7 +290,7 @@ html, body {
                 
                 $isWishlisted = false;
                 if ($userID) {
-                    $check = $conn->query("SELECT 1 FROM Wishlist WHERE userID='".intval($userID)."' AND eventID='".$row['eventID']."' LIMIT 1");
+                    $check = $conn->query("SELECT 1 FROM wishlist WHERE userID='".intval($userID)."' AND eventID='".$row['eventID']."' LIMIT 1");
                     $isWishlisted = ($check && $check->num_rows > 0);
                 }
 
