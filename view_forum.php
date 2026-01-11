@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_comment'])) {
 $sql = "
     SELECT f.forumID, f.title, f.content, f.forumImage, f.createdDate, f.userID, u.userName
     FROM forum f
-    JOIN User u ON f.userID = u.userID
+    JOIN user u ON f.userID = u.userID
     WHERE f.forumID = ?
     LIMIT 1
 ";
@@ -69,7 +69,7 @@ if (!$forum) {
 $tagResult = $conn->prepare("
     SELECT t.tagName
     FROM forumtag ft
-    JOIN Tag t ON ft.tagID = t.tagID
+    JOIN tag t ON ft.tagID = t.tagID
     WHERE ft.forumID = ?
 ");
 $tagResult->bind_param("i", $forumID);
@@ -79,7 +79,7 @@ $tags = $tagResult->get_result();
 // Fetch comments
 $commentResult = $conn->prepare("
     SELECT c.commentID, c.comment, c.createdDate, c.updatedAt, u.userName, c.userID
-    FROM Comment c
+    FROM comment c
     JOIN User u ON c.userID = u.userID
     WHERE c.forumID = ?
     ORDER BY c.createdDate ASC

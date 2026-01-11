@@ -64,7 +64,7 @@ if (!$course) {
 /* ==========================
     PREVENT DOUBLE REGISTRATION
 ========================== */
-$checkReg = $conn->prepare("SELECT 1 FROM CourseRegistration WHERE userID = ? AND courseID = ? AND registrationStatus = 'active'");
+$checkReg = $conn->prepare("SELECT 1 FROM courseregistration WHERE userID = ? AND courseID = ? AND registrationStatus = 'active'");
 $checkReg->bind_param("ii", $userID, $courseID);
 $checkReg->execute();
 if ($checkReg->get_result()->num_rows > 0) {
@@ -108,7 +108,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && empty($errorMessage)) {
                 $payStmt->bind_param("sii", $receiptPath, $userID, $courseRegisterID);
                 $payStmt->execute();
 
-                $conn->query("UPDATE Course SET participantNum = participantNum + 1 WHERE courseID = $courseID");
+                $conn->query("UPDATE course SET participantNum = participantNum + 1 WHERE courseID = $courseID");
                 $successMessage = "Payment submitted successfully! Waiting for organizer approval.";
             } else {
                 $errorMessage = "⚠️ Failed to register course.";

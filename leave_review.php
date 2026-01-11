@@ -29,8 +29,8 @@ if ($type === 'event') {
         SELECT er.eventRegisterID AS registerID, 
                e.eventName AS activityName, 
                e.description AS activityDescription
-        FROM EventRegistration er
-        JOIN Event e ON er.eventID = e.eventID
+        FROM eventregistration er
+        JOIN event e ON er.eventID = e.eventID
         WHERE e.eventID = ? AND er.userID = ? AND er.status = 'Completed'
     ");
 } else {
@@ -38,8 +38,8 @@ if ($type === 'event') {
         SELECT cr.courseRegisterID AS registerID, 
                c.courseName AS activityName, 
                c.description AS activityDescription
-        FROM CourseRegistration cr
-        JOIN Course c ON cr.courseID = c.courseID
+        FROM courseregistration cr
+        JOIN course c ON cr.courseID = c.courseID
         WHERE c.courseID = ? AND cr.userID = ? AND cr.status = 'Completed'
     ");
 }
