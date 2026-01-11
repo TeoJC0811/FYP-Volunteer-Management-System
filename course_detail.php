@@ -153,7 +153,7 @@ $avgRating = round($avgResult['avgRating'] ?? 0, 1);
 $totalReviews = $avgResult['totalReviews'] ?? 0;
 $totalPages = ceil($totalReviews / $reviewsPerPage);
 
-$sqlReviews = "SELECT r.rating, r.comment, r.reviewDate, u.userName FROM review r JOIN User u ON r.userID = u.userID WHERE r.activityType = 'course' AND r.activityID = ? ORDER BY r.reviewDate DESC LIMIT ? OFFSET ?";
+$sqlReviews = "SELECT r.rating, r.comment, r.reviewDate, u.userName FROM review r JOIN user u ON r.userID = u.userID WHERE r.activityType = 'course' AND r.activityID = ? ORDER BY r.reviewDate DESC LIMIT ? OFFSET ?";
 $stmt2 = $conn->prepare($sqlReviews);
 $stmt2->bind_param("iii", $courseID, $reviewsPerPage, $offset);
 $stmt2->execute();

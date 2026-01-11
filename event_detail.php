@@ -188,7 +188,7 @@ $totalReviews = $avgResult['totalReviews'] ?? 0;
 $totalPages = ceil($totalReviews / $reviewsPerPage);
 
 /* ✅ Fetch Paginated Reviews */
-$sqlReviews = "SELECT r.rating, r.comment, r.reviewDate, u.userName FROM review r JOIN User u ON r.userID = u.userID WHERE r.activityType = 'event' AND r.activityID = ? ORDER BY r.reviewDate DESC LIMIT ? OFFSET ?";
+$sqlReviews = "SELECT r.rating, r.comment, r.reviewDate, u.userName FROM review r JOIN user u ON r.userID = u.userID WHERE r.activityType = 'event' AND r.activityID = ? ORDER BY r.reviewDate DESC LIMIT ? OFFSET ?";
 $stmt2 = $conn->prepare($sqlReviews);
 $stmt2->bind_param("iii", $eventID, $reviewsPerPage, $offset);
 $stmt2->execute();
