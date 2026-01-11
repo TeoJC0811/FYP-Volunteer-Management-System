@@ -8,7 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = trim($_POST['password']);
 
     // Query only admin and organizer accounts
-    $sql = "SELECT * FROM User WHERE userEmail = ? AND (userRoles = 'admin' OR userRoles = 'organizer') LIMIT 1";
+    $sql = "SELECT * FROM user WHERE userEmail = ? AND (userRoles = 'admin' OR userRoles = 'organizer') LIMIT 1";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $email);
     $stmt->execute();

@@ -16,7 +16,7 @@ $eventID = intval($_GET['id']);
 $userID = $_SESSION['userID'] ?? null;
 
 /* ✅ Fetch Event Details FIRST */
-$sql = "SELECT * FROM Event WHERE eventID = ?";
+$sql = "SELECT * FROM event WHERE eventID = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $eventID);
 $stmt->execute();
@@ -28,7 +28,7 @@ $event = $result->fetch_assoc();
 /* ✅ Fetch Organizer Info (Fixed Undefined Variable Bug) */
 $organizer = null;
 if (!empty($event['organizerID'])) {
-    $orgStmt = $conn->prepare("SELECT userName, userEmail, phoneNumber FROM User WHERE userID = ?");
+    $orgStmt = $conn->prepare("SELECT userName, userEmail, phoneNumber FROM user WHERE userID = ?");
     $orgStmt->bind_param("i", $event['organizerID']);
     $orgStmt->execute();
     $orgResult = $orgStmt->get_result();

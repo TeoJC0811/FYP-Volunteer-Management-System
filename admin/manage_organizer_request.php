@@ -17,7 +17,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
     $newStatus = ($action === 'approve') ? 'approved' : 'rejected';
 
     // 1. Update the user status in the User table
-    $stmt = $conn->prepare("UPDATE User SET status = ? WHERE userID = ? AND userRoles = 'organizer'");
+    $stmt = $conn->prepare("UPDATE user SET status = ? WHERE userID = ? AND userRoles = 'organizer'");
     $stmt->bind_param("si", $newStatus, $targetID);
     
     if ($stmt->execute()) {
@@ -45,7 +45,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 // Filter & Search Logic
 $searchQuery = isset($_GET['search']) ? trim($_GET['search']) : "";
 
-$sql = "SELECT * FROM User WHERE userRoles = 'organizer' AND status = 'pending'";
+$sql = "SELECT * FROM user WHERE userRoles = 'organizer' AND status = 'pending'";
 $params = [];
 $types = "";
 

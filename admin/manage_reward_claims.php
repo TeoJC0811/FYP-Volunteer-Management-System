@@ -74,8 +74,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['update'])) {
 
     $stmt = $conn->prepare("
         SELECT rc.status, rc.userID, rc.rewardID, r.rewardName, r.pointRequired
-        FROM RewardClaims rc
-        JOIN Reward r ON rc.rewardID = r.rewardID
+        FROM rewardclaims rc
+        JOIN reward r ON rc.rewardID = r.rewardID
         WHERE rc.claimID = ?
     ");
     $stmt->bind_param("i", $claimID);
@@ -102,7 +102,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['update'])) {
         $deliveryCompany = "N/A";
     }
 
-    $sql_update = "UPDATE RewardClaims SET status=?, recipientName=?, phoneNumber=?, deliveryAddress=?, etaText=?, deliveryCompany=?, trackingNumber=? WHERE claimID=?";
+    $sql_update = "UPDATE rewardclaims SET status=?, recipientName=?, phoneNumber=?, deliveryAddress=?, etaText=?, deliveryCompany=?, trackingNumber=? WHERE claimID=?";
     $stmt = $conn->prepare($sql_update);
     $stmt->bind_param("sssssssi", $status, $recipientName, $phoneNumber, $deliveryAddress, $etaText, $deliveryCompany, $trackingNumber, $claimID);
     
@@ -144,9 +144,9 @@ $search_query = $_GET['search'] ?? '';
 
 $sql_fetch = "
     SELECT rc.*, u.userName, u.userEmail, r.rewardName, r.rewardImage
-    FROM RewardClaims rc
-    JOIN User u ON rc.userID = u.userID
-    JOIN Reward r ON rc.rewardID = r.rewardID
+    FROM rewardclaims rc
+    JOIN user u ON rc.userID = u.userID
+    JOIN reward r ON rc.rewardID = r.rewardID
     WHERE 1=1
 ";
 

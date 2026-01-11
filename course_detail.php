@@ -23,7 +23,7 @@ $course = $result->fetch_assoc();
 /* ✅ Fetch Organizer Info */
 $organizer = null;
 if (!empty($course['organizerID'])) {
-    $orgStmt = $conn->prepare("SELECT userName, userEmail, phoneNumber FROM User WHERE userID = ?");
+    $orgStmt = $conn->prepare("SELECT userName, userEmail, phoneNumber FROM user WHERE userID = ?");
     $orgStmt->bind_param("i", $course['organizerID']);
     $orgStmt->execute();
     $orgResult = $orgStmt->get_result();
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['join_course'])) {
         SELECT activityName FROM (
             -- Check Other Registered Courses
             SELECT c.courseName AS activityName, c.startDate, c.endDate 
-            FROM courseRegistration cr
+            FROM courseregistration cr
             JOIN course c ON cr.courseID = c.courseID
             WHERE cr.userID = ? AND cr.registrationStatus = 'active'
             
@@ -68,8 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['join_course'])) {
             
             -- Check Registered Events
             SELECT e.eventName AS activityName, e.startDate, e.endDate 
-            FROM EventRegistration er
-            JOIN Event e ON er.eventID = e.eventID
+            FROM eventRegistration er
+            JOIN event e ON er.eventID = e.eventID
             WHERE er.userID = ? AND er.registrationStatus = 'active'
         ) AS combined_schedule
         WHERE (startDate <= ? AND endDate >= ?)
@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['join_course'])) {
 
 // ✅ Handle Withdrawal (Soft Delete)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['withdraw_course'])) {
-    $update = $conn->prepare("UPDATE CourseRegistration SET registrationStatus = 'withdrawn' WHERE userID = ? AND courseID = ?");
+    $update = $conn->prepare("UPDATE courseregistration SET registrationStatus = 'withdrawn' WHERE userID = ? AND courseID = ?");
     $update->bind_param("ii", $userID, $courseID);
     if ($update->execute()) {
         $newStrikeCount = $withdrawCount + 1;
@@ -131,7 +131,7 @@ if ($userID) {
 }
 
 // ✅ Fetch Gallery
-$sqlGallery = "SELECT imageUrl, caption FROM activityGallery WHERE activityType = 'course' AND activityID = ?";
+$sqlGallery = "SELECT imageUrl, caption FROM activitygallery WHERE activityType = 'course' AND activityID = ?";
 $stmtGallery = $conn->prepare($sqlGallery);
 $stmtGallery->bind_param("i", $courseID);
 $stmtGallery->execute();

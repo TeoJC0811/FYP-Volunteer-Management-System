@@ -30,7 +30,7 @@ if (isset($_GET['error'])) {
 // Handle Delete
 if (isset($_GET['delete'])) {
     $categoryID = intval($_GET['delete']);
-    $stmt = $conn->prepare("DELETE FROM Category WHERE categoryID = ?");
+    $stmt = $conn->prepare("DELETE FROM category WHERE categoryID = ?");
     $stmt->bind_param("i", $categoryID);
 
     if ($stmt->execute()) {
@@ -41,7 +41,7 @@ if (isset($_GET['delete'])) {
 }
 
 // Fetch all interests
-$result = $conn->query("SELECT * FROM Category ORDER BY categoryID ASC");
+$result = $conn->query("SELECT * FROM category ORDER BY categoryID ASC");
 ?>
 
 <!DOCTYPE html>

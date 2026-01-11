@@ -34,7 +34,7 @@ if (isset($_GET['error'])) {
 if (isset($_GET['delete'])) {
     $courseID = intval($_GET['delete']);
     if ($role === 'organizer') {
-        $check = $conn->prepare("SELECT courseID FROM Course WHERE courseID = ? AND organizerID = ?");
+        $check = $conn->prepare("SELECT courseID FROM course WHERE courseID = ? AND organizerID = ?");
         $check->bind_param("ii", $courseID, $userID);
         $check->execute();
         $res = $check->get_result();
@@ -43,7 +43,7 @@ if (isset($_GET['delete'])) {
         if ($res->num_rows === 0) {
             $error = "❌ You are not authorized to delete this training.";
         } else {
-            $stmt = $conn->prepare("DELETE FROM Course WHERE courseID = ?");
+            $stmt = $conn->prepare("DELETE FROM course WHERE courseID = ?");
             $stmt->bind_param("i", $courseID);
             if ($stmt->execute()) {
                 $message = "✅ Training deleted successfully!";
@@ -53,7 +53,7 @@ if (isset($_GET['delete'])) {
             $stmt->close();
         }
     } else {
-        $stmt = $conn->prepare("DELETE FROM Course WHERE courseID = ?");
+        $stmt = $conn->prepare("DELETE FROM course WHERE courseID = ?");
         $stmt->bind_param("i", $courseID);
         if ($stmt->execute()) {
             $message = "✅ Training deleted successfully!";
@@ -87,7 +87,7 @@ $params = [];
 $paramTypes = "";
 $todayStr = date('Y-m-d'); 
 
-$enrollmentSubquery = "(SELECT COUNT(*) FROM CourseRegistration cr WHERE cr.courseID = c.courseID) AS currentEnrollment";
+$enrollmentSubquery = "(SELECT COUNT(*) FROM courseregistration cr WHERE cr.courseID = c.courseID) AS currentEnrollment";
 
 if ($role === 'organizer') {
     $sql = "SELECT c.*, cat.categoryName, {$enrollmentSubquery} FROM Course c LEFT JOIN Category cat ON c.categoryID = cat.categoryID WHERE c.organizerID = ?";

@@ -18,13 +18,13 @@ $isCourse = ($type === 'course');
 if ($isCourse) {
     $idName    = 'courseID';
     $linkPage  = 'manage_training_registration.php';
-    $dbTable   = 'Course';
+    $dbTable   = 'course';
     $nameCol   = 'courseName';
     $idValue   = intval($_GET['courseID'] ?? 0);
 } else {
     $idName    = 'eventID';
     $linkPage  = 'manage_event_registration.php';
-    $dbTable   = 'Event';
+    $dbTable   = 'event';
     $nameCol   = 'eventName';
     $idValue   = intval($_GET['eventID'] ?? 0);
 }

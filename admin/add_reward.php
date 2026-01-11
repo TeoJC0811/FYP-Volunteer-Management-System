@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (!empty($rewardName) && $pointRequired > 0 && !$error) {
-        $sql = "INSERT INTO Reward (rewardName, description, rewardImage, pointRequired) 
+        $sql = "INSERT INTO reward (rewardName, description, rewardImage, pointRequired) 
                 VALUES (?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("sssi", $rewardName, $description, $rewardImage, $pointRequired);

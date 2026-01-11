@@ -17,7 +17,7 @@ $message = (isset($_GET['status']) && $_GET['status'] == 'success') ? "✅ Train
     FETCH COUNTRIES
 ========================== */
 $countries = [];
-$res = $conn->query("SHOW COLUMNS FROM Course LIKE 'courseCountry'");
+$res = $conn->query("SHOW COLUMNS FROM course LIKE 'courseCountry'");
 if ($res && $row = $res->fetch_assoc()) {
     preg_match_all("/'([^']+)'/", $row['Type'], $m);
     $countries = $m[1] ?? [];
@@ -27,7 +27,7 @@ if ($res && $row = $res->fetch_assoc()) {
     FETCH CATEGORIES
 ========================== */
 $categories = [];
-$result = $conn->query("SELECT categoryID, categoryName FROM Category ORDER BY categoryName ASC");
+$result = $conn->query("SELECT categoryID, categoryName FROM category ORDER BY categoryName ASC");
 while ($row = $result->fetch_assoc()) {
     $categories[] = $row;
 }
@@ -36,7 +36,7 @@ while ($row = $result->fetch_assoc()) {
     FETCH PAST COURSES
 ========================== */
 $pastCourses = [];
-$pc = $conn->query("SELECT courseID, courseName, startDate FROM Course ORDER BY startDate DESC");
+$pc = $conn->query("SELECT courseID, courseName, startDate FROM course ORDER BY startDate DESC");
 while ($row = $pc->fetch_assoc()) {
     $pastCourses[] = $row;
 }
@@ -111,7 +111,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     move_uploaded_file($_FILES['coverImage']['tmp_name'], $uploadDir . $coverImageName);
                 }
 
-                $sql = "INSERT INTO Course
+                $sql = "INSERT INTO course
                     (courseName, coverImage, description, courseLocation, courseCountry,
                      startDate, endDate, startTime, endTime, deadline,
                      participantNum, maxParticipant, fee, organizerID, categoryID)

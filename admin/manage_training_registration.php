@@ -33,7 +33,7 @@ if ($selectedCourse <= 0) {
 ===================================================== */
 $stmtCourse = $conn->prepare("
     SELECT courseName, courseLocation, startDate, endDate, startTime, endTime, organizerID, checkinToken 
-    FROM Course
+    FROM course
     WHERE courseID = ?
 ");
 $stmtCourse->bind_param("i", $selectedCourse);
@@ -53,7 +53,7 @@ if ($role === "organizer" && $courseOrganizer != $userID) {
 ===================================================== */
 if (empty($checkinToken)) {
     $checkinToken = bin2hex(random_bytes(32)); 
-    $stmtUpdate = $conn->prepare("UPDATE Course SET checkinToken = ? WHERE courseID = ?");
+    $stmtUpdate = $conn->prepare("UPDATE course SET checkinToken = ? WHERE courseID = ?");
     $stmtUpdate->bind_param("si", $checkinToken, $selectedCourse);
     $stmtUpdate->execute();
     $stmtUpdate->close();
@@ -78,7 +78,7 @@ $courseInfo = [
 ===================================================== */
 if (isset($_GET['delete'])) {
     $id = intval($_GET['delete']);
-    $stmt = $conn->prepare("DELETE FROM CourseRegistration WHERE courseRegisterID = ?");
+    $stmt = $conn->prepare("DELETE FROM courseregistration WHERE courseRegisterID = ?");
     $stmt->bind_param("i", $id);
 
     if ($stmt->execute()) {
@@ -107,8 +107,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['update'])) {
 
     $stmt = $conn->prepare("
         SELECT cr.status, cr.userID, COALESCE(cp.paymentStatus, 'pending') 
-        FROM CourseRegistration cr 
-        LEFT JOIN CoursePayment cp ON cr.courseRegisterID = cp.courseRegisterID 
+        FROM courseregistration cr 
+        LEFT JOIN coursepayment cp ON cr.courseRegisterID = cp.courseRegisterID 
         WHERE cr.courseRegisterID = ?
     ");
     $stmt->bind_param("i", $id);
@@ -188,9 +188,9 @@ if (isset($_GET['error'])) $error = htmlspecialchars(urldecode($_GET['error']));
     FETCH REGISTRATION LIST
 ===================================================== */
 $sql = "SELECT cr.courseRegisterID, cr.registrationDate, cr.status, u.userName, cp.paymentStatus, cp.receiptImage
-        FROM CourseRegistration cr
+        FROM courseregistration cr
         JOIN User u ON cr.userID = u.userID
-        LEFT JOIN CoursePayment cp ON cr.courseRegisterID = cp.courseRegisterID
+        LEFT JOIN coursepayment cp ON cr.courseRegisterID = cp.courseRegisterID
         WHERE cr.courseID = ?";
 $params = [$selectedCourse];
 $types = "i";

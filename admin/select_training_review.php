@@ -29,8 +29,8 @@ $query = "
         c.maxParticipant,
         COUNT(r.reviewID) AS totalReviews,
         ROUND(AVG(r.rating), 2) AS avgRating
-    FROM Course c
-    LEFT JOIN Review r 
+    FROM course c
+    LEFT JOIN review r 
         ON r.activityID = c.courseID
         AND r.activityType = 'course'
     WHERE c.organizerID = ?

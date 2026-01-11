@@ -24,7 +24,7 @@ $organizerID = $_SESSION['userID'];
 ============================================= */
 $stmt = $conn->prepare("
     SELECT courseName, courseLocation, courseCountry, startDate, endDate, startTime, endTime, organizerID
-    FROM Course
+    FROM course
     WHERE courseID = ?
 ");
 $stmt->bind_param("i", $courseID);
@@ -91,8 +91,8 @@ switch ($sort) {
 ================================ */
 $query = "
     SELECT r.reviewID, r.rating, r.comment, r.reviewDate, u.userName
-    FROM Review r
-    JOIN User u ON r.userID = u.userID
+    FROM review r
+    JOIN user u ON r.userID = u.userID
     WHERE r.activityType = 'course'
       AND r.activityID = ?
     ORDER BY {$orderBy} 

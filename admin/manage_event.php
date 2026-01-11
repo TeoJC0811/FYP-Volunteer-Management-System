@@ -36,7 +36,7 @@ if (isset($_GET['delete'])) {
 
     // 1. Authorization Check
     if ($role === 'organizer') {
-        $check = $conn->prepare("SELECT eventID FROM Event WHERE eventID = ? AND organizerID = ?");
+        $check = $conn->prepare("SELECT eventID FROM event WHERE eventID = ? AND organizerID = ?");
         $check->bind_param("ii", $eventID, $userID);
         $check->execute();
         if ($check->get_result()->num_rows > 0) {
@@ -65,12 +65,12 @@ if (isset($_GET['delete'])) {
             $delPast2->execute();
 
             // C. Delete registrations for this event
-            $delReg = $conn->prepare("DELETE FROM EventRegistration WHERE eventID = ?");
+            $delReg = $conn->prepare("DELETE FROM eventregistration WHERE eventID = ?");
             $delReg->bind_param("i", $eventID);
             $delReg->execute();
 
             // D. Finally, delete the event itself
-            $stmt = $conn->prepare("DELETE FROM Event WHERE eventID = ?");
+            $stmt = $conn->prepare("DELETE FROM event WHERE eventID = ?");
             $stmt->bind_param("i", $eventID);
             $stmt->execute();
 
@@ -108,9 +108,9 @@ $today = date('Y-m-d');
 
 $sql_select = "
     SELECT e.*, c.categoryName,
-        (SELECT COUNT(*) FROM EventRegistration er WHERE er.eventID = e.eventID) AS currentParticipants
-    FROM Event e
-    LEFT JOIN Category c ON e.categoryID = c.categoryID
+        (SELECT COUNT(*) FROM eventregistration er WHERE er.eventID = e.eventID) AS currentParticipants
+    FROM event e
+    LEFT JOIN category c ON e.categoryID = c.categoryID
 ";
 
 $sql_where = " WHERE 1 "; 

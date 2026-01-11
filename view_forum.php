@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_forum'])) {
 // Handle comment deletion (only owner can delete)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_comment'])) {
     $commentID = intval($_POST['commentID']);
-    $delC = $conn->prepare("DELETE FROM Comment WHERE commentID = ? AND userID = ?");
+    $delC = $conn->prepare("DELETE FROM comment WHERE commentID = ? AND userID = ?");
     $delC->bind_param("ii", $commentID, $userID);
     $delC->execute();
     header("Location: view_forum.php?id=$forumID");
@@ -80,7 +80,7 @@ $tags = $tagResult->get_result();
 $commentResult = $conn->prepare("
     SELECT c.commentID, c.comment, c.createdDate, c.updatedAt, u.userName, c.userID
     FROM comment c
-    JOIN User u ON c.userID = u.userID
+    JOIN user u ON c.userID = u.userID
     WHERE c.forumID = ?
     ORDER BY c.createdDate ASC
 ");
@@ -113,7 +113,7 @@ if ($resultVote->num_rows > 0) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment'])) {
     $comment = trim($_POST['comment']);
     if (!empty($comment)) {
-        $stmt = $conn->prepare("INSERT INTO Comment (comment, userID, forumID) VALUES (?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO comment (comment, userID, forumID) VALUES (?, ?, ?)");
         $stmt->bind_param("sii", $comment, $userID, $forumID);
         $stmt->execute();
         header("Location: view_forum.php?id=$forumID");

@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $categoryName = trim($_POST['categoryName']);
 
     if (!empty($categoryName)) {
-        $sql = "INSERT INTO Category (categoryName) VALUES (?)";
+        $sql = "INSERT INTO category (categoryName) VALUES (?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $categoryName);
 

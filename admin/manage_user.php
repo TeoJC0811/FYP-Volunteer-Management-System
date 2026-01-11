@@ -30,7 +30,7 @@ if (isset($_GET['error'])) {
 // Handle Delete
 if (isset($_GET['delete'])) {
     $userID = intval($_GET['delete']);
-    $stmt = $conn->prepare("DELETE FROM User WHERE userID = ?");
+    $stmt = $conn->prepare("DELETE FROM user WHERE userID = ?");
     $stmt->bind_param("i", $userID);
 
     if ($stmt->execute()) {

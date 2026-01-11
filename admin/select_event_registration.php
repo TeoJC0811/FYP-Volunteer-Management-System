@@ -29,8 +29,8 @@ $sql = "
         e.startDate,
         e.endDate,
         e.organizerID,
-        (SELECT COUNT(*) FROM EventRegistration er WHERE er.eventID = e.eventID) AS participantCount
-    FROM Event e
+        (SELECT COUNT(*) FROM eventregistration er WHERE er.eventID = e.eventID) AS participantCount
+    FROM event e
     WHERE 1=1
 ";
 

@@ -26,7 +26,7 @@ $message = $error = "";
 if (isset($_GET['delete_img'])) {
     $imgID = intval($_GET['delete_img']);
     // Check by ID only to allow deletion of existing NULL/blank records
-    $checkImg = $conn->prepare("SELECT imageUrl FROM activityGallery WHERE galleryID = ? AND activityID = ?");
+    $checkImg = $conn->prepare("SELECT imageUrl FROM activitgallery WHERE galleryID = ? AND activityID = ?");
     $checkImg->bind_param("ii", $imgID, $courseID);
     $checkImg->execute();
     $imgRes = $checkImg->get_result();
@@ -46,7 +46,7 @@ if (isset($_GET['delete_img'])) {
     HANDLE CERTIFICATE REMOVAL
 ================================== */
 if (isset($_GET['remove_cert'])) {
-    $stmtCert = $conn->prepare("SELECT certificate_template FROM Course WHERE courseID = ?");
+    $stmtCert = $conn->prepare("SELECT certificate_template FROM course WHERE courseID = ?");
     $stmtCert->bind_param("i", $courseID);
     $stmtCert->execute();
     $resCert = $stmtCert->get_result()->fetch_assoc();
@@ -55,7 +55,7 @@ if (isset($_GET['remove_cert'])) {
         $filePath = "../uploads/certificates/" . $resCert['certificate_template'];
         if (file_exists($filePath)) unlink($filePath);
         
-        $updateCert = $conn->prepare("UPDATE Course SET certificate_template = NULL WHERE courseID = ?");
+        $updateCert = $conn->prepare("UPDATE course SET certificate_template = NULL WHERE courseID = ?");
         $updateCert->bind_param("i", $courseID);
         if ($updateCert->execute()) {
             header("Location: edit_training.php?id=$courseID&msg=cert_removed");
@@ -69,8 +69,8 @@ if (isset($_GET['remove_cert'])) {
 ========================== */
 $stmt = $conn->prepare("
     SELECT c.*, cat.categoryName
-    FROM Course c
-    LEFT JOIN Category cat ON c.categoryID = cat.categoryID
+    FROM course c
+    LEFT JOIN category cat ON c.categoryID = cat.categoryID
     WHERE c.courseID = ?
 ");
 $stmt->bind_param("i", $courseID);
@@ -91,7 +91,7 @@ if ($userRole === 'organizer' && $course['organizerID'] != $userID) {
     FETCH ENUMS & LISTS
 ========================== */
 $countries = [];
-$res = $conn->query("SHOW COLUMNS FROM Course LIKE 'courseCountry'");
+$res = $conn->query("SHOW COLUMNS FROM course LIKE 'courseCountry'");
 if ($res && $row = $res->fetch_assoc()) {
     preg_match_all("/'([^']+)'/", $row['Type'], $m);
     $countries = $m[1] ?? [];
@@ -109,7 +109,7 @@ while ($row = $resCat->fetch_assoc()) {
 $pastCourses = [];
 $q = $conn->query("
     SELECT courseID, courseName, startDate
-    FROM Course
+    FROM course
     WHERE courseID != $courseID
     ORDER BY startDate DESC
 ");
@@ -198,7 +198,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if (!$isError) {
             /* UPDATE DATABASE */
             $stmt = $conn->prepare("
-                UPDATE Course SET
+                UPDATE course SET
                     courseName=?, description=?, courseLocation=?, courseCountry=?,
                     startDate=?, endDate=?, startTime=?, endTime=?, deadline=?,
                     maxParticipant=?, fee=?, coverImage=?, categoryID=?, certificate_template=?

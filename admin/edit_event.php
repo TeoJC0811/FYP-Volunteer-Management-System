@@ -23,7 +23,7 @@ $message = $error = "";
    ================================== */
 if (isset($_GET['delete_img'])) {
     $imgID = intval($_GET['delete_img']);
-    $checkImg = $conn->prepare("SELECT imageUrl FROM activityGallery WHERE galleryID = ? AND activityID = ?");
+    $checkImg = $conn->prepare("SELECT imageUrl FROM activitygallery WHERE galleryID = ? AND activityID = ?");
     $checkImg->bind_param("ii", $imgID, $eventID);
     $checkImg->execute();
     $imgRes = $checkImg->get_result();
@@ -43,7 +43,7 @@ if (isset($_GET['delete_img'])) {
     HANDLE CERTIFICATE REMOVAL
    ================================== */
 if (isset($_GET['remove_cert'])) {
-    $stmtCert = $conn->prepare("SELECT certificate_template FROM Event WHERE eventID = ?");
+    $stmtCert = $conn->prepare("SELECT certificate_template FROM event WHERE eventID = ?");
     $stmtCert->bind_param("i", $eventID);
     $stmtCert->execute();
     $resCert = $stmtCert->get_result()->fetch_assoc();
@@ -52,7 +52,7 @@ if (isset($_GET['remove_cert'])) {
         $filePath = "../uploads/certificates/" . $resCert['certificate_template'];
         if (file_exists($filePath)) unlink($filePath);
         
-        $updateCert = $conn->prepare("UPDATE Event SET certificate_template = NULL WHERE eventID = ?");
+        $updateCert = $conn->prepare("UPDATE event SET certificate_template = NULL WHERE eventID = ?");
         $updateCert->bind_param("i", $eventID);
         if ($updateCert->execute()) {
             header("Location: edit_event.php?id=$eventID&msg=cert_removed");
@@ -66,8 +66,8 @@ if (isset($_GET['remove_cert'])) {
    ========================== */
 $stmt = $conn->prepare("
     SELECT e.*, c.categoryName
-    FROM Event e
-    LEFT JOIN Category c ON e.categoryID = c.categoryID
+    FROM event e
+    LEFT JOIN category c ON e.categoryID = c.categoryID
     WHERE e.eventID = ?
 ");
 $stmt->bind_param("i", $eventID);
@@ -90,7 +90,7 @@ if ($userRole === 'organizer' && $event['organizerID'] != $userID) {
     GET COUNTRY ENUM
    ========================== */
 $countries = [];
-$countryEnumResult = $conn->query("SHOW COLUMNS FROM Event LIKE 'eventCountry'");
+$countryEnumResult = $conn->query("SHOW COLUMNS FROM event LIKE 'eventCountry'");
 if ($countryEnumResult && $countryRow = $countryEnumResult->fetch_assoc()) {
     preg_match_all("/'([^']+)'/", $countryRow['Type'], $matches);
     $countries = $matches[1] ?? [];
@@ -111,7 +111,7 @@ while ($row = $resCat->fetch_assoc()) {
 $pastEvents = [];
 $q = $conn->query("
     SELECT eventID, eventName, startDate, endDate
-    FROM Event
+    FROM event
     WHERE eventID != $eventID
     ORDER BY startDate DESC
 ");
@@ -203,7 +203,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if (!$isError) {
             /* UPDATE EVENT */
             $stmt = $conn->prepare("
-                UPDATE Event
+                UPDATE event
                 SET eventName=?, description=?, coverImage=?, eventLocation=?, eventCountry=?, 
                     startDate=?, startTime=?, endDate=?, endTime=?, deadline=?, 
                     maxParticipant=?, point=?, categoryID=?, certificate_template=?

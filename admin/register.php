@@ -17,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
         // Insert new admin into User table
-        $sql = "INSERT INTO User (userName, userEmail, password, userRoles) VALUES (?, ?, ?, 'admin')";
+        $sql = "INSERT INTO user (userName, userEmail, password, userRoles) VALUES (?, ?, ?, 'admin')";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("sss", $username, $email, $hashedPassword);
 

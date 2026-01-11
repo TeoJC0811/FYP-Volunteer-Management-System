@@ -21,7 +21,7 @@ $organizerID = $_SESSION['userID'];
 ===================================== */
 $stmt = $conn->prepare("
     SELECT eventName, eventLocation, eventCountry, startDate, endDate, startTime, endTime, organizerID
-    FROM Event
+    FROM event
     WHERE eventID = ?
 ");
 $stmt->bind_param("i", $eventID);
@@ -88,8 +88,8 @@ switch ($sort) {
 ===================================== */
 $query = "
     SELECT r.reviewID, r.rating, r.comment, r.reviewDate, u.userName
-    FROM Review r
-    JOIN User u ON r.userID = u.userID
+    FROM review r
+    JOIN user u ON r.userID = u.userID
     WHERE r.activityType = 'event'
       AND r.activityID = ?
     ORDER BY {$orderBy} 

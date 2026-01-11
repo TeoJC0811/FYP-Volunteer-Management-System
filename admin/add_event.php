@@ -26,7 +26,7 @@ if ($countryEnumResult && $countryRow = $countryEnumResult->fetch_assoc()) {
 }
 
 // Get Categories
-$resCat = $conn->query("SELECT categoryID, categoryName FROM Category ORDER BY categoryName ASC");
+$resCat = $conn->query("SELECT categoryID, categoryName FROM category ORDER BY categoryName ASC");
 while ($row = $resCat->fetch_assoc()) {
     $categories[] = $row;
 }
@@ -35,7 +35,7 @@ while ($row = $resCat->fetch_assoc()) {
     FETCH ALL PAST EVENTS
 ========================== */
 $pastEvents = [];
-$pe = $conn->query("SELECT eventID, eventName, startDate, endDate FROM Event ORDER BY startDate DESC");
+$pe = $conn->query("SELECT eventID, eventName, startDate, endDate FROM event ORDER BY startDate DESC");
 while ($row = $pe->fetch_assoc()) {
     $pastEvents[] = $row;
 }
@@ -112,7 +112,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         if (!$isError) {
             /* INSERT EVENT - Added startTime and endTime */
-            $sql = "INSERT INTO Event 
+            $sql = "INSERT INTO event 
                     (eventName, coverImage, eventLocation, eventCountry, description,
                      startDate, startTime, endDate, endTime, deadline, participantNum, maxParticipant, point, organizerID, categoryID)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)";
@@ -160,7 +160,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         move_uploaded_file($tmpName, $uploadGalleryDir . $fileName);
                         $imgPath = "uploads/event_gallery/" . $fileName;
                         $g = $conn->prepare("
-                            INSERT INTO activityGallery (activityID, activityType, imageUrl, caption)
+                            INSERT INTO activitygallery (activityID, activityType, imageUrl, caption)
                             VALUES (?, 'event', ?, '')
                         ");
                         $g->bind_param("is", $newEventID, $imgPath);

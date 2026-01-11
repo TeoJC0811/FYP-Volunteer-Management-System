@@ -51,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (!$error && !empty($userName) && !empty($userEmail) && !empty($password) && !empty($role)) {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-        $sql = "INSERT INTO User (userName, userEmail, password, dateOfBorn, gender, country, phoneNumber, userRoles, totalPoints, qrCodeUrl) 
+        $sql = "INSERT INTO user (userName, userEmail, password, dateOfBorn, gender, country, phoneNumber, userRoles, totalPoints, qrCodeUrl) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("sssssssss", $userName, $userEmail, $hashedPassword, $dateOfBorn, $gender, $country, $phoneNumber, $role, $qrCodeUrl);
@@ -169,7 +169,7 @@ if (isset($_GET['success']) && $_GET['success'] == 1) {
                 <select name="country" required>
                     <option value="">-- Select Country --</option>
                     <?php
-                    $result = $conn->query("SHOW COLUMNS FROM User LIKE 'country'");
+                    $result = $conn->query("SHOW COLUMNS FROM user LIKE 'country'");
                     $row = $result->fetch_assoc();
                     $enumStr = $row['Type'];
                     preg_match("/^enum\('(.*)'\)$/", $enumStr, $matches);

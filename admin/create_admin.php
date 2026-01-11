@@ -8,7 +8,7 @@ $password_plain = "admin123";
 $hashed = password_hash($password_plain, PASSWORD_DEFAULT);
 
 // 3. Insert admin into DB
-$sql = "INSERT INTO User 
+$sql = "INSERT INTO user 
 (userName, userEmail, password, dateOfBorn, gender, country, phoneNumber, totalPoints, userRoles, qrCodeUrl)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 

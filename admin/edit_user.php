@@ -15,7 +15,7 @@ if (!$userID) {
 }
 
 // Fetch existing user
-$stmt = $conn->prepare("SELECT * FROM User WHERE userID = ?");
+$stmt = $conn->prepare("SELECT * FROM user WHERE userID = ?");
 $stmt->bind_param("i", $userID);
 $stmt->execute();
 $result = $stmt->get_result();

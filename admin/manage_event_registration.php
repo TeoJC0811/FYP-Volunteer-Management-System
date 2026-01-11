@@ -39,7 +39,7 @@ $eventOrganizer = null;
 // Fetch values from DB
 $stmtEvent = $conn->prepare("
     SELECT eventName, startDate, endDate, startTime, endTime, eventLocation, organizerID, checkinToken 
-    FROM Event 
+    FROM event 
     WHERE eventID = ?
 ");
 $stmtEvent->bind_param("i", $selectedEvent);
@@ -59,7 +59,7 @@ if ($role === "organizer" && $eventOrganizer != $userID) {
 ===================================================== */
 if (empty($checkinToken)) {
     $checkinToken = bin2hex(random_bytes(32)); 
-    $stmtUpdate = $conn->prepare("UPDATE Event SET checkinToken = ? WHERE eventID = ?");
+    $stmtUpdate = $conn->prepare("UPDATE event SET checkinToken = ? WHERE eventID = ?");
     $stmtUpdate->bind_param("si", $checkinToken, $selectedEvent);
     $stmtUpdate->execute();
     $stmtUpdate->close();
@@ -81,7 +81,7 @@ $eventInfo = [
 ===================================================== */
 if (isset($_GET['delete'])) {
     $id = intval($_GET['delete']);
-    $stmt = $conn->prepare("DELETE FROM EventRegistration WHERE eventRegisterID = ?");
+    $stmt = $conn->prepare("DELETE FROM eventregistration WHERE eventRegisterID = ?");
     $stmt->bind_param("i", $id);
 
     if ($stmt->execute()) {
@@ -103,7 +103,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update'])) {
     $newStatus = trim($_POST['status']);
     $eventID_from_form = intval($_POST['eventID']); 
 
-    $stmt = $conn->prepare("SELECT status, userID, eventID FROM EventRegistration WHERE eventRegisterID = ? AND eventID = ?");
+    $stmt = $conn->prepare("SELECT status, userID, eventID FROM eventregistration WHERE eventRegisterID = ? AND eventID = ?");
     $stmt->bind_param("ii", $id, $eventID_from_form); 
     $stmt->execute();
     $stmt->bind_result($currentStatus, $participantID, $eventID_db);
@@ -117,7 +117,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update'])) {
     } else {
         $conn->begin_transaction();
         try {
-            $stmt = $conn->prepare("UPDATE EventRegistration SET status = ? WHERE eventRegisterID = ?");
+            $stmt = $conn->prepare("UPDATE eventregistration SET status = ? WHERE eventRegisterID = ?");
             $stmt->bind_param("si", $newStatus, $id);
             $stmt->execute();
             $stmt->close();
@@ -154,7 +154,7 @@ if (isset($_GET['error'])) $error = htmlspecialchars(urldecode($_GET['error']));
 /* =====================================================
     FETCH REGISTRATION LIST
 ===================================================== */
-$sql = "SELECT er.eventRegisterID, er.registrationDate, er.status, u.userName FROM EventRegistration er JOIN User u ON er.userID = u.userID WHERE er.eventID = ?";
+$sql = "SELECT er.eventRegisterID, er.registrationDate, er.status, u.userName FROM eventregistration er JOIN user u ON er.userID = u.userID WHERE er.eventID = ?";
 $params = [$selectedEvent];
 $types = "i";
 

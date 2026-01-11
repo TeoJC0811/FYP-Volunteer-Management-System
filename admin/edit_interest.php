@@ -15,7 +15,7 @@ if (!$categoryID) {
 }
 
 // Fetch existing interest
-$stmt = $conn->prepare("SELECT * FROM Category WHERE categoryID = ?");
+$stmt = $conn->prepare("SELECT * FROM category WHERE categoryID = ?");
 $stmt->bind_param("i", $categoryID);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $categoryName = trim($_POST['categoryName']);
 
     if (!empty($categoryName)) {
-        $stmt = $conn->prepare("UPDATE Category SET categoryName = ? WHERE categoryID = ?");
+        $stmt = $conn->prepare("UPDATE category SET categoryName = ? WHERE categoryID = ?");
         $stmt->bind_param("si", $categoryName, $categoryID);
 
         if ($stmt->execute()) {
