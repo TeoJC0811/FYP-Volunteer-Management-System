@@ -33,7 +33,7 @@ $client->setClientId('147195553585-4sj8v86c32216duh7jhn1jco1grt57lh.apps.googleu
  * Replace 'YOUR_ACTUAL_GOOGLE_SECRET' with your real Client Secret 
  * from the Google Cloud Console.
  */
-$client->setClientSecret('YOUR_ACTUAL_GOOGLE_SECRET');
+$client->setClientSecret('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');
 
 // This will now correctly be: https://servetogetherfyp.onrender.com/google_callback.php
 $client->setRedirectUri($baseUrl . '/google_callback.php');

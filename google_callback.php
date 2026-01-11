@@ -30,7 +30,7 @@ $client = new Client();
 $client->setClientId('147195553585-4sj8v86c32216duh7jhn1jco1grt57lh.apps.googleusercontent.com');
 
 // ⚠️ REPLACE THIS with your actual secret ending in TSUL
-$client->setClientSecret('YOUR_ACTUAL_SECRET_ENDING_IN_TSUL');
+$client->setClientSecret('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');
 
 /* MUST match the logic used in google_login.php */
 $client->setRedirectUri($baseUrl . '/google_callback.php');
