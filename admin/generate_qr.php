@@ -1,5 +1,5 @@
 <?php
-ob_start(); // Safety: prevents invisible spaces from breaking the page
+ob_start(); 
 session_start();
 include("../db.php");
 
@@ -9,7 +9,7 @@ if (!isset($_SESSION['userID']) || !in_array($_SESSION['role'], ['admin', 'organ
 }
 
 /* =====================================================
-   1️⃣ DETERMINE ENTITY TYPE
+    1️⃣ DETERMINE ENTITY TYPE
 ===================================================== */
 $type = $_GET['type'] ?? 'event';
 $type = ($type === 'course') ? 'course' : 'event';
@@ -34,7 +34,7 @@ if ($idValue <= 0) {
 }
 
 /* =====================================================
-   2️⃣ FETCH ENTITY NAME + CHECKIN TOKEN
+    2️⃣ FETCH ENTITY NAME + CHECKIN TOKEN
 ===================================================== */
 $stmt = $conn->prepare("SELECT {$nameCol}, checkinToken FROM {$dbTable} WHERE {$idName} = ?");
 $stmt->bind_param("i", $idValue);
@@ -48,23 +48,26 @@ if (empty($checkinToken)) {
 }
 
 /* =====================================================
-   3️⃣ BASE URL SETUP
+    3️⃣ BASE URL SETUP (Smart Detection for Local vs Render)
 ===================================================== */
 $scheme = ((!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')) ? 'https' : 'http';
-$baseUrl = $scheme . '://' . $_SERVER['HTTP_HOST'] . '/servetogether';
+
+// If host is localhost, add the subfolder. If on Render, leave it empty.
+$folder = ($_SERVER['HTTP_HOST'] === 'localhost') ? '/servetogether' : '';
+$baseUrl = $scheme . '://' . $_SERVER['HTTP_HOST'] . $folder;
 
 /* =====================================================
-   4️⃣ FINAL CHECK-IN URL
+    4️⃣ FINAL CHECK-IN URL
 ===================================================== */
 $checkinUrl = $baseUrl . "/checkin.php?type={$type}&id={$idValue}&token={$checkinToken}";
 
 /* =====================================================
-   5️⃣ GOOGLE QR API (The "One-File Fix")
+    5️⃣ GOOGLE QR API
 ===================================================== */
-// This replaces the need for local scripts and libraries
-$qrCodeUrl = "https://chart.googleapis.com/chart?chs=450x450&cht=qr&chl=" . urlencode($checkinUrl) . "&choe=UTF-8";
+// We use a simpler URL structure to ensure Google Chart API doesn't 404
+$qrCodeUrl = "https://chart.googleapis.com/chart?cht=qr&chs=450x450&chl=" . urlencode($checkinUrl);
 
-ob_end_flush(); // Release the page content
+ob_end_flush(); 
 ?>
 
 <!DOCTYPE html>
@@ -83,6 +86,7 @@ ob_end_flush(); // Release the page content
         .copy-btn { background:#ffffff; color:#333; border: 1.5px solid #ddd; }
         .url-preview { background: #fafafa; padding: 12px 15px; border-radius: 8px; border: 1px solid #eee; margin-top: 20px; font-size: 13px; color: #555; display: flex; align-items: center; justify-content: space-between; gap: 15px; }
         .url-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 350px; }
+        .back-link { display: block; margin-top: 20px; color: #007bff; text-decoration: none; font-size: 14px; }
         @media print { .print-btn, .copy-btn, .back-link, .url-preview, .btn-group { display: none; } body { background: white; padding: 0; } .qr-container { box-shadow: none; border: none; padding: 0; margin-top: 50px; } }
     </style>
 </head>
