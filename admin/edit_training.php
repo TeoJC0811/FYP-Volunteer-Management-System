@@ -98,7 +98,7 @@ if ($res && $row = $res->fetch_assoc()) {
 }
 
 $categories = [];
-$resCat = $conn->query("SELECT categoryID, categoryName FROM Category ORDER BY categoryName ASC");
+$resCat = $conn->query("SELECT categoryID, categoryName FROM category ORDER BY categoryName ASC");
 while ($row = $resCat->fetch_assoc()) {
     $categories[] = $row;
 }

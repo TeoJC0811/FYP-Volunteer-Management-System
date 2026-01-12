@@ -101,7 +101,7 @@ $totalVotes = $voteResult->get_result()->fetch_assoc()['totalVotes'];
 
 // Check user’s vote
 $userVote = 0;
-$checkVote = $conn->prepare("SELECT voteValue FROM ForumVote WHERE forumID=? AND userID=?");
+$checkVote = $conn->prepare("SELECT voteValue FROM forumvote WHERE forumID=? AND userID=?");
 $checkVote->bind_param("ii", $forumID, $userID);
 $checkVote->execute();
 $resultVote = $checkVote->get_result();

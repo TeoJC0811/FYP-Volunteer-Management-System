@@ -100,7 +100,7 @@ if ($countryEnumResult && $countryRow = $countryEnumResult->fetch_assoc()) {
     GET CATEGORIES
    ========================== */
 $categories = [];
-$resCat = $conn->query("SELECT categoryID, categoryName FROM Category ORDER BY categoryName ASC");
+$resCat = $conn->query("SELECT categoryID, categoryName FROM category ORDER BY categoryName ASC");
 while ($row = $resCat->fetch_assoc()) {
     $categories[] = $row;
 }
@@ -262,7 +262,7 @@ if(isset($_GET['msg'])) {
 /* ==========================
     GET CURRENT GALLERY IMAGES
    ========================== */
-$gallery = $conn->prepare("SELECT * FROM activityGallery WHERE activityID=? AND activityType='event'");
+$gallery = $conn->prepare("SELECT * FROM activitygallery WHERE activityID=? AND activityType='event'");
 $gallery->bind_param("i", $eventID);
 $gallery->execute();
 $galleryResult = $gallery->get_result();
