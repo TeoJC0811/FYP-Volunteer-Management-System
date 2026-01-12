@@ -263,7 +263,7 @@ if(isset($_GET['msg'])) {
     GET CURRENT GALLERY IMAGES
 ========================== */
 // CORRECTED: Fetch images based on ID only so old NULL/blank records display correctly
-$gallery = $conn->prepare("SELECT * FROM activityGallery WHERE activityID=?");
+$gallery = $conn->prepare("SELECT * FROM activitygallery WHERE activityID=?");
 $gallery->bind_param("i", $courseID);
 $gallery->execute();
 $galleryResult = $gallery->get_result();

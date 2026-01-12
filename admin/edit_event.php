@@ -31,7 +31,7 @@ if (isset($_GET['delete_img'])) {
     if ($row = $imgRes->fetch_assoc()) {
         $filePath = "../" . $row['imageUrl'];
         if (file_exists($filePath)) unlink($filePath);
-        $del = $conn->prepare("DELETE FROM activityGallery WHERE galleryID = ?");
+        $del = $conn->prepare("DELETE FROM activitygallery WHERE galleryID = ?");
         $del->bind_param("i", $imgID);
         if ($del->execute()) {
             $message = "✅ Image deleted successfully!";
@@ -239,7 +239,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             $fileName = time() . "_" . basename($_FILES['galleryImages']['name'][$i]);
                             move_uploaded_file($tmpName, $uploadGalleryDir . $fileName);
                             $imgPath = "uploads/event_gallery/" . $fileName;
-                            $g = $conn->prepare("INSERT INTO activityGallery (activityID, activityType, imageUrl) VALUES (?, 'event', ?)");
+                            $g = $conn->prepare("INSERT INTO activitygallery (activityID, activityType, imageUrl) VALUES (?, 'event', ?)");
                             $g->bind_param("is", $eventID, $imgPath);
                             $g->execute();
                         }
