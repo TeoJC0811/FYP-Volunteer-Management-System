@@ -52,15 +52,16 @@ if (empty($checkinToken)) {
 }
 
 /* =====================================================
-   3️⃣ NGROK / LOCAL SAFE BASE URL (FIXED FOR RENDER)
+   3️⃣ AUTO-DETECT BASE URL (LOCALHOST vs RENDER)
 ===================================================== */
 $scheme = (
     (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
     || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
 ) ? 'https' : 'http';
 
-// Automatically detect if we need the /servetogether folder (localhost) or not (Render)
+// Use /servetogether only on localhost
 $folder = ($_SERVER['HTTP_HOST'] === 'localhost') ? '/servetogether' : '';
+
 $baseUrl = $scheme . '://' . $_SERVER['HTTP_HOST'] . $folder;
 
 /* =====================================================
@@ -72,12 +73,10 @@ $checkinUrl = $baseUrl . "/checkin.php"
     . "&token={$checkinToken}";
 
 /* =====================================================
-   5️⃣ QR IMAGE GENERATOR (Using YOUR method)
+   5️⃣ QR IMAGE (RENDER SAFE)
 ===================================================== */
-// We use your local file, but point to the Google API if the local one isn't found
-$qrCodeUrl = "https://chart.googleapis.com/chart?cht=qr&chs=450x450&chl=" . urlencode($checkinUrl);
+$qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=450x450&data=" . urlencode($checkinUrl);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -97,7 +96,7 @@ body {
     border-radius:16px;
     display:inline-block;
     box-shadow:0 10px 30px rgba(0,0,0,.1);
-    max-width: 550px; 
+    max-width: 550px;
 }
 img {
     margin:25px 0;
@@ -171,14 +170,14 @@ img {
 <body>
 
 <div class="qr-container">
-    <h2 style="margin-top:0; color:#333;"><?= htmlspecialchars($entityName) ?></h2>
-    <p style="color:#666; font-size: 16px;">Scan to check-in for attendance</p>
+    <h2><?= htmlspecialchars($entityName) ?></h2>
+    <p>Scan to check-in for attendance</p>
 
-    <img src="<?= $qrCodeUrl ?>" width="450" height="450" alt="Attendance QR Code">
+    <img src="<?= $qrCodeUrl ?>" width="450" height="450">
 
     <div class="url-preview">
         <span class="url-text" id="rawUrl"><?= htmlspecialchars($checkinUrl) ?></span>
-        <button onclick="copyToClipboard()" class="copy-btn" style="padding: 6px 12px; font-size: 12px;" id="copyBtn">
+        <button onclick="copyToClipboard()" class="copy-btn" id="copyBtn">
             <i class="fas fa-copy"></i> Copy Link
         </button>
     </div>
@@ -198,22 +197,11 @@ img {
 function copyToClipboard() {
     const url = document.getElementById('rawUrl').innerText;
     const btn = document.getElementById('copyBtn');
-    
+    const original = btn.innerHTML;
+
     navigator.clipboard.writeText(url).then(() => {
-        const originalContent = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-        btn.style.backgroundColor = '#e8f5e9';
-        btn.style.color = '#2e7d32';
-        btn.style.borderColor = '#c8e6c9';
-        
-        setTimeout(() => {
-            btn.innerHTML = originalContent;
-            btn.style.backgroundColor = '';
-            btn.style.color = '';
-            btn.style.borderColor = '';
-        }, 2000);
-    }).catch(err => {
-        alert('Could not copy text.');
+        setTimeout(() => btn.innerHTML = original, 2000);
     });
 }
 </script>
