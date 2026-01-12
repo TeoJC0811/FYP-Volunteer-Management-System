@@ -238,7 +238,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             move_uploaded_file($tmpName, $uploadGalleryDir . $fileName);
                             $imgPath = "uploads/course_gallery/" . $fileName;
                             
-                            $g = $conn->prepare("INSERT INTO activityGallery (activityID, activityType, imageUrl) VALUES (?, ?, ?)");
+                            $g = $conn->prepare("INSERT INTO activitygallery (activityID, activityType, imageUrl) VALUES (?, ?, ?)");
                             $g->bind_param("iss", $courseID, $activityTypeLabel, $imgPath);
                             $g->execute();
                         }
