@@ -3,10 +3,9 @@ ob_start();
 session_start();
 include("../db.php");
 
-// Allow only admin / organizer
-// Note: Changed to 'userRoles' to match your process_login.php session keys
-if (!isset($_SESSION['userID']) || !in_array($_SESSION['userRoles'], ['admin', 'organizer'])) {
-    die("Unauthorized access.");
+// FIXED: Changed back to 'role' to match your current session setup
+if (!isset($_SESSION['userID']) || !isset($_SESSION['role']) || !in_array($_SESSION['role'], ['admin', 'organizer'])) {
+    die("Unauthorized access. Access Level: " . ($_SESSION['role'] ?? 'None'));
 }
 
 /* =====================================================
@@ -71,9 +70,9 @@ $baseUrl = $scheme . '://' . $_SERVER['HTTP_HOST'] . $folder;
 $checkinUrl = $baseUrl . "/checkin.php?type={$type}&id={$idValue}&token={$checkinToken}";
 
 /* =====================================================
-    5️⃣ GOOGLE QR API (Safe construction)
+    5️⃣ GOOGLE QR API
 ===================================================== */
-// We use rawurlencode to ensure symbols in the token don't confuse Google
+// This ensures the image generates correctly without needing local scripts
 $qrCodeUrl = "https://chart.googleapis.com/chart?cht=qr&chs=450x450&chl=" . rawurlencode($checkinUrl);
 
 ob_end_flush(); 
