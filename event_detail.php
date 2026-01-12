@@ -196,7 +196,7 @@ $reviews = $stmt2->get_result();
 
 
 /* ✅ Fetch Past Events linked to this event */
-$pastEventQuery = "SELECT e.eventID, e.eventName, e.coverImage, e.startDate, e.endDate FROM eventpast ep JOIN Event e ON ep.pastEventID = e.eventID WHERE ep.eventID = ?";
+$pastEventQuery = "SELECT e.eventID, e.eventName, e.coverImage, e.startDate, e.endDate FROM eventpast ep JOIN event e ON ep.pastEventID = e.eventID WHERE ep.eventID = ?";
 $pastStmt = $conn->prepare($pastEventQuery);
 $pastStmt->bind_param("i", $eventID);
 $pastStmt->execute();

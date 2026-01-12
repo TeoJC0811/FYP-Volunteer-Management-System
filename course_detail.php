@@ -159,7 +159,7 @@ $stmt2->bind_param("iii", $courseID, $reviewsPerPage, $offset);
 $stmt2->execute();
 $reviews = $stmt2->get_result();
 
-$pastCourseQuery = "SELECT c.courseID, c.courseName, c.coverImage, c.startDate FROM coursePast cp JOIN course c ON cp.pastCourseID = c.courseID WHERE cp.courseID = ?";
+$pastCourseQuery = "SELECT c.courseID, c.courseName, c.coverImage, c.startDate FROM coursepast cp JOIN course c ON cp.pastCourseID = c.courseID WHERE cp.courseID = ?";
 $pastStmt = $conn->prepare($pastCourseQuery);
 $pastStmt->bind_param("i", $courseID);
 $pastStmt->execute();
