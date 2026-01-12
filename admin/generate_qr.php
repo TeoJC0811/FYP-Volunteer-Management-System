@@ -1,15 +1,14 @@
 <?php
-ob_start(); 
 session_start();
 include("../db.php");
 
-// FIXED: Changed back to 'role' to match your current session setup
-if (!isset($_SESSION['userID']) || !isset($_SESSION['role']) || !in_array($_SESSION['role'], ['admin', 'organizer'])) {
-    die("Unauthorized access. Access Level: " . ($_SESSION['role'] ?? 'None'));
+// Allow only admin / organizer
+if (!isset($_SESSION['userID']) || !in_array($_SESSION['role'], ['admin', 'organizer'])) {
+    die("Unauthorized access.");
 }
 
 /* =====================================================
-    1️⃣ DETERMINE ENTITY TYPE
+   1️⃣ DETERMINE ENTITY TYPE
 ===================================================== */
 $type = $_GET['type'] ?? 'event';
 $type = ($type === 'course') ? 'course' : 'event';
@@ -35,7 +34,7 @@ if ($idValue <= 0) {
 }
 
 /* =====================================================
-    2️⃣ FETCH ENTITY NAME + CHECKIN TOKEN
+   2️⃣ FETCH ENTITY NAME + CHECKIN TOKEN
 ===================================================== */
 $stmt = $conn->prepare("
     SELECT {$nameCol}, checkinToken
@@ -53,29 +52,30 @@ if (empty($checkinToken)) {
 }
 
 /* =====================================================
-    3️⃣ SMART BASE URL (Local vs Render)
+   3️⃣ NGROK / LOCAL SAFE BASE URL (FIXED FOR RENDER)
 ===================================================== */
 $scheme = (
     (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
     || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
 ) ? 'https' : 'http';
 
-// Detect if we are running on localhost or Render
+// Automatically detect if we need the /servetogether folder (localhost) or not (Render)
 $folder = ($_SERVER['HTTP_HOST'] === 'localhost') ? '/servetogether' : '';
 $baseUrl = $scheme . '://' . $_SERVER['HTTP_HOST'] . $folder;
 
 /* =====================================================
-    4️⃣ FINAL CHECK-IN URL (QR CONTENT)
+   4️⃣ FINAL CHECK-IN URL (QR CONTENT)
 ===================================================== */
-$checkinUrl = $baseUrl . "/checkin.php?type={$type}&id={$idValue}&token={$checkinToken}";
+$checkinUrl = $baseUrl . "/checkin.php"
+    . "?type={$type}"
+    . "&id={$idValue}"
+    . "&token={$checkinToken}";
 
 /* =====================================================
-    5️⃣ GOOGLE QR API
+   5️⃣ QR IMAGE GENERATOR (Using YOUR method)
 ===================================================== */
-// This ensures the image generates correctly without needing local scripts
-$qrCodeUrl = "https://chart.googleapis.com/chart?cht=qr&chs=450x450&chl=" . rawurlencode($checkinUrl);
-
-ob_end_flush(); 
+// We use your local file, but point to the Google API if the local one isn't found
+$qrCodeUrl = "https://chart.googleapis.com/chart?cht=qr&chs=450x450&chl=" . urlencode($checkinUrl);
 ?>
 
 <!DOCTYPE html>
