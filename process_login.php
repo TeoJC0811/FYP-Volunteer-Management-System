@@ -27,8 +27,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         |------------------------------------------------------------------
         | 1. CHECK FOR GOOGLE-ONLY ACCOUNTS
         |------------------------------------------------------------------
-        | If the password field is empty, they registered via Google.
-        | They MUST login via the Google button.
         */
         if (empty($storedPassword)) {
             header("Location: login.php?error=" . urlencode("This account uses Google Login. Please click 'Login with Google'."));
@@ -39,7 +37,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         |------------------------------------------------------------------
         | 2. CHECK VERIFICATION STATUS
         |------------------------------------------------------------------
-        | If not verified, send a new code and redirect to verify.php
         */
         if ($user['is_verified'] == 0) {
             $verification_code = rand(100000, 999999);
@@ -77,12 +74,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         /*
         |------------------------------------------------------------------
-        | 3. PASSWORD VERIFICATION
+        | 3. PASSWORD VERIFICATION & LOGIN
         |------------------------------------------------------------------
         */
         if (password_verify($password, $storedPassword) || $password === $storedPassword) {
             
-            // If it was plain text (legacy), update it to a hash now
+            // Legacy plain-text check: update to hash if necessary
             if ($password === $storedPassword && !password_get_info($storedPassword)['algo']) {
                 $newHashed = password_hash($password, PASSWORD_DEFAULT);
                 $upd = $conn->prepare("UPDATE user SET password = ? WHERE userID = ?");
@@ -96,15 +93,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['userName'] = $user['userName'];
             $_SESSION['userRoles'] = $user['userRoles'];
             
-            // Handle QR Check-in or Normal Redirect
-            if (isset($_SESSION['redirect_token'])) {
-                $token = $_SESSION['redirect_token'];
-                unset($_SESSION['redirect_token']); 
-                header("Location: checkin.php?token=" . $token); 
-            } elseif (isset($_SESSION['redirect_after_login'])) {
-                $url = $_SESSION['redirect_after_login'];
-                unset($_SESSION['redirect_after_login']);
-                header("Location: " . $url);
+            /*
+            |--------------------------------------------------------------
+            | 4. REDIRECT LOGIC (QR Check-in or Normal Page)
+            |--------------------------------------------------------------
+            | If redirect_after_login is set (from checkin.php), send them there.
+            | Otherwise, send them to the home page.
+            */
+            if (isset($_SESSION['redirect_after_login'])) {
+                $targetUrl = $_SESSION['redirect_after_login'];
+                unset($_SESSION['redirect_after_login']); // Clear session
+                header("Location: " . $targetUrl);
             } else {
                 header("Location: index.php");
             }
