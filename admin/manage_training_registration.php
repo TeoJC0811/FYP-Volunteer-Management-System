@@ -124,22 +124,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['update'])) {
     } else {
         $conn->begin_transaction();
         try {
-            $stmt = $conn->prepare("UPDATE CourseRegistration SET status = ? WHERE courseRegisterID = ?");
+            $stmt = $conn->prepare("UPDATE courseregistration SET status = ? WHERE courseRegisterID = ?");
             $stmt->bind_param("si", $newStatus, $id);
             $stmt->execute();
             $stmt->close();
 
             if ($paymentStatus) {
-                $check = $conn->prepare("SELECT coursePaymentID FROM CoursePayment WHERE courseRegisterID = ?");
+                $check = $conn->prepare("SELECT coursePaymentID FROM coursepayment WHERE courseRegisterID = ?");
                 $check->bind_param("i", $id);
                 $check->execute();
                 $check->store_result();
 
                 if ($check->num_rows > 0) {
-                    $stmt2 = $conn->prepare("UPDATE CoursePayment SET paymentStatus = ? WHERE courseRegisterID = ?");
+                    $stmt2 = $conn->prepare("UPDATE coursepayment SET paymentStatus = ? WHERE courseRegisterID = ?");
                     $stmt2->bind_param("si", $paymentStatus, $id);
                 } else {
-                    $stmt2 = $conn->prepare("INSERT INTO CoursePayment (paymentStatus, userID, courseRegisterID) VALUES (?, ?, ?)");
+                    $stmt2 = $conn->prepare("INSERT INTO coursepayment (paymentStatus, userID, courseRegisterID) VALUES (?, ?, ?)");
                     $stmt2->bind_param("sii", $paymentStatus, $participantID, $id);
                 }
                 $stmt2->execute();
