@@ -25,16 +25,16 @@ if ($isEvent) {
     $regID = intval($_GET['eventRegisterID']);
     $stmt = $conn->prepare("
         SELECT e.eventName AS title, e.endDate AS endDate, er.userID
-        FROM EventRegistration er
-        JOIN Event e ON er.eventID = e.eventID
+        FROM eventregistration er
+        JOIN event e ON er.eventID = e.eventID
         WHERE er.eventRegisterID = ?
     ");
 } else {
     $regID = intval($_GET['courseRegisterID']);
     $stmt = $conn->prepare("
         SELECT c.courseName AS title, c.courseDate AS endDate, cr.userID
-        FROM CourseRegistration cr
-        JOIN Course c ON cr.courseID = c.courseID
+        FROM courseregistration cr
+        JOIN course c ON cr.courseID = c.courseID
         WHERE cr.courseRegisterID = ?
     ");
 }
