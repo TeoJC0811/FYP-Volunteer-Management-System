@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['join_event'])) {
             SELECT activityName FROM (
                 -- Check Other Registered Events
                 SELECT e.eventName AS activityName, e.startDate, e.endDate 
-                FROM EventRegistration er
+                FROM eventregistration er
                 JOIN event e ON er.eventID = e.eventID
                 WHERE er.userID = ? AND er.registrationStatus = 'active'
                 
@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['join_event'])) {
                 -- Check Registered Courses
                 SELECT c.courseName AS activityName, c.startDate, c.endDate 
                 FROM courseregistration cr
-                JOIN Course c ON cr.courseID = c.courseID
+                JOIN course c ON cr.courseID = c.courseID
                 WHERE cr.userID = ? AND cr.registrationStatus = 'active'
             ) AS combined_schedule
             WHERE (startDate <= ? AND endDate >= ?)
