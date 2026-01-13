@@ -440,7 +440,7 @@ $galleryResult = $gallery->get_result();
                 <?php else: ?>
                     <span style="color: #7f8c8d; font-weight: bold;">⚪ Using System Default Template</span>
                     <div class="cert-actions">
-                        <a href="../certificate/certificate_template_demo.pdf" target="_blank" class="btn-view-pdf">👁️ View Default Template</a>
+                        <a href="..uploads/certificates/certificate_template_demo.pdf" target="_blank" class="btn-view-pdf">👁️ View Default Template</a>
                     </div>
                 <?php endif; ?>
             </div>
