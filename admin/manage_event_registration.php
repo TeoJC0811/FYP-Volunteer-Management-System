@@ -123,7 +123,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update'])) {
             $stmt->close();
 
             if ($newStatus === "Completed" && $currentStatus !== "Completed") {
-                $stmtEventDetail = $conn->prepare("SELECT eventName, point FROM Event WHERE eventID = ?");
+                $stmtEventDetail = $conn->prepare("SELECT eventName, point FROM event WHERE eventID = ?");
                 $stmtEventDetail->bind_param("i", $eventID_db);
                 $stmtEventDetail->execute();
                 $stmtEventDetail->bind_result($eventTitleForNotif, $pointsEarned);
