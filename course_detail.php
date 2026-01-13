@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['join_course'])) {
             
             -- Check Registered Events
             SELECT e.eventName AS activityName, e.startDate, e.endDate 
-            FROM eventRegistration er
+            FROM eventregistration er
             JOIN event e ON er.eventID = e.eventID
             WHERE er.userID = ? AND er.registrationStatus = 'active'
         ) AS combined_schedule

@@ -51,12 +51,12 @@ if (isset($_GET['success']) && $_GET['success'] == 1) {
 if (isset($_GET['delete'])) {
     $reviewID = intval($_GET['delete']);
 
-    $check_review_stmt = $conn->prepare("SELECT reviewID FROM Review WHERE reviewID = ? AND activityID = ? AND activityType = 'event'");
+    $check_review_stmt = $conn->prepare("SELECT reviewID FROM review WHERE reviewID = ? AND activityID = ? AND activityType = 'event'");
     $check_review_stmt->bind_param("ii", $reviewID, $eventID);
     $check_review_stmt->execute();
 
     if ($check_review_stmt->get_result()->num_rows > 0) {
-        $deleteStmt = $conn->prepare("DELETE FROM Review WHERE reviewID = ?");
+        $deleteStmt = $conn->prepare("DELETE FROM review WHERE reviewID = ?");
         $deleteStmt->bind_param("i", $reviewID);
 
         if ($deleteStmt->execute()) {
