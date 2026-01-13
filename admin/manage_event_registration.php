@@ -132,7 +132,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update'])) {
 
                 $notifMsg = "🎉 You successfully completed the event <b>{$eventTitleForNotif}</b> and earned {$pointsEarned} points!";
 
-                $stmtNotif = $conn->prepare("INSERT INTO Notification (message, activityType, activityID, userID, isRead, createdAt) VALUES (?, 'event', ?, ?, 0, NOW())");
+                $stmtNotif = $conn->prepare("INSERT INTO notification (message, activityType, activityID, userID, isRead, createdAt) VALUES (?, 'event', ?, ?, 0, NOW())");
                 $stmtNotif->bind_param("sii", $notifMsg, $eventID_db, $participantID);
                 $stmtNotif->execute();
                 $stmtNotif->close();

@@ -92,7 +92,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['update'])) {
 
     $refunded = false;
     if ($status === "Rejected") {
-        $updatePoints = $conn->prepare("UPDATE User SET totalPoints = totalPoints + ? WHERE userID = ?");
+        $updatePoints = $conn->prepare("UPDATE user SET totalPoints = totalPoints + ? WHERE userID = ?");
         $updatePoints->bind_param("ii", $pointRequired, $targetUserID);
         $updatePoints->execute();
         $updatePoints->close();

@@ -48,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     if (!empty($name) && !empty($email) && !empty($role)) {
-        $stmt = $conn->prepare("UPDATE User SET userName = ?, userEmail = ?, userRoles = ?, qrCodeUrl = ? WHERE userID = ?");
+        $stmt = $conn->prepare("UPDATE user SET userName = ?, userEmail = ?, userRoles = ?, qrCodeUrl = ? WHERE userID = ?");
         $stmt->bind_param("ssssi", $name, $email, $role, $qrPath, $userID);
 
         if ($stmt->execute()) {

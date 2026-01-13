@@ -26,7 +26,7 @@ $message = $error = "";
 if (isset($_GET['delete_img'])) {
     $imgID = intval($_GET['delete_img']);
     // Check by ID only to allow deletion of existing NULL/blank records
-    $checkImg = $conn->prepare("SELECT imageUrl FROM activitgallery WHERE galleryID = ? AND activityID = ?");
+    $checkImg = $conn->prepare("SELECT imageUrl FROM activitygallery WHERE galleryID = ? AND activityID = ?");
     $checkImg->bind_param("ii", $imgID, $courseID);
     $checkImg->execute();
     $imgRes = $checkImg->get_result();
@@ -34,7 +34,7 @@ if (isset($_GET['delete_img'])) {
     if ($row = $imgRes->fetch_assoc()) {
         $filePath = "../" . $row['imageUrl'];
         if (file_exists($filePath)) unlink($filePath);
-        $del = $conn->prepare("DELETE FROM activityGallery WHERE galleryID = ?");
+        $del = $conn->prepare("DELETE FROM activitygallery WHERE galleryID = ?");
         $del->bind_param("i", $imgID);
         if ($del->execute()) {
             $message = "✅ Image deleted successfully!";

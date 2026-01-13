@@ -155,7 +155,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['update'])) {
                     }
 
                     if ($pNotifMsg !== "") {
-                        $stmtPNotif = $conn->prepare("INSERT INTO Notification (message, activityType, activityID, userID, isRead, createdAt) VALUES (?, 'course', ?, ?, 0, NOW())");
+                        $stmtPNotif = $conn->prepare("INSERT INTO notification (message, activityType, activityID, userID, isRead, createdAt) VALUES (?, 'course', ?, ?, 0, NOW())");
                         $stmtPNotif->bind_param("sii", $pNotifMsg, $courseID_from_form, $participantID);
                         $stmtPNotif->execute();
                         $stmtPNotif->close();
@@ -165,7 +165,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['update'])) {
 
             if ($newStatus === "Completed" && $currentStatus !== "Completed") {
                 $notifMsg = "🎉 You successfully completed the course <b>{$courseName}</b>!";
-                $stmtNotif = $conn->prepare("INSERT INTO Notification (message, activityType, activityID, userID, isRead, createdAt) VALUES (?, 'course', ?, ?, 0, NOW())");
+                $stmtNotif = $conn->prepare("INSERT INTO notification (message, activityType, activityID, userID, isRead, createdAt) VALUES (?, 'course', ?, ?, 0, NOW())");
                 $stmtNotif->bind_param("sii", $notifMsg, $courseID_from_form, $participantID); 
                 $stmtNotif->execute();
                 $stmtNotif->close();

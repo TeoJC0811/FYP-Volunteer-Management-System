@@ -143,7 +143,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             $fileName = time() . "_" . basename($_FILES['galleryImages']['name'][$i]);
                             move_uploaded_file($tmpName, $uploadGalleryDir . $fileName);
                             $imgPath = "uploads/course_gallery/" . $fileName;
-                            $g = $conn->prepare("INSERT INTO activityGallery (activityID, activityType, imageUrl, caption) VALUES (?, 'course', ?, '')");
+                            $g = $conn->prepare("INSERT INTO activitygallery (activityID, activityType, imageUrl, caption) VALUES (?, 'course', ?, '')");
                             $g->bind_param("is", $newCourseID, $imgPath);
                             $g->execute();
                         }
