@@ -155,7 +155,7 @@ $disableButton = $isFull || $isDeadlinePassed;
 /* ✅ Check Wishlist Status */
 $isWishlisted = false;
 if ($userID) {
-    $wishCheck = $conn->prepare("SELECT 1 FROM Wishlist WHERE userID = ? AND eventID = ? LIMIT 1");
+    $wishCheck = $conn->prepare("SELECT 1 FROM wishlist WHERE userID = ? AND eventID = ? LIMIT 1");
     $wishCheck->bind_param("ii", $userID, $eventID);
     $wishCheck->execute();
     $wishResult = $wishCheck->get_result();
