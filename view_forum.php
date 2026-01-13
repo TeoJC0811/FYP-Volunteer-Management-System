@@ -132,13 +132,12 @@ html, body { height: 100%; margin: 0; }
 body { display: flex; flex-direction: column; min-height: 100vh; background-color: #f5f7f9; }
 main { flex: 1; padding: 40px 20px; }
 
-/* 🛠️ Centered Wrapper: Button and Box are children of this */
 .content-wrapper {
     max-width: 800px; 
     margin: 0 auto; 
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Space between button and container-box */
+    gap: 15px;
 }
 
 .container-box { 
@@ -151,7 +150,6 @@ main { flex: 1; padding: 40px 20px; }
     box-sizing: border-box;
 }
 
-/* 🛠️ Improved Back Button */
 .back-btn { 
     text-decoration: none; 
     color: white; 
@@ -162,7 +160,6 @@ main { flex: 1; padding: 40px 20px; }
     width: fit-content; 
     display: flex;
     align-items: center;
-    margin-left: 250px;
 }
 .back-btn:hover { background-color: #333; }
 
@@ -175,14 +172,14 @@ main { flex: 1; padding: 40px 20px; }
 .forum-image-display { width: 100%; max-height: 500px; object-fit: contain; border-radius: 8px; margin-bottom: 20px; background-color: #fafafa; border: 1px solid #eee; }
 .forum-content { white-space: pre-line; margin-bottom: 20px; }
 
-.three-dots { background: none; border: none; font-size: 20px; cursor: pointer; padding: 5px; }
+.three-dots, .three-dots-horizontal { background: none; border: none; font-size: 20px; cursor: pointer; padding: 5px; }
 .dropdown { position: relative; display: inline-block; }
 .dropdown-content { display: none; position: absolute; right: 0; background: #fff; border: 1px solid #ccc; border-radius: 5px; min-width: 100px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10; }
 .dropdown-content button { width: 100%; padding: 8px 10px; border: none; background: none; text-align: left; cursor: pointer; }
 .dropdown-content button:hover { background: #f5f5f5; color: red; }
 
 .edit-box { margin: 15px 0; width: 100%; }
-.edit-box textarea { width: 100%; min-height: 150px; padding: 12px; border: 1px solid #007bff; border-radius: 6px; resize: vertical; box-sizing: border-box; font-family: inherit; font-size: 14px; line-height: 1.5; background-color: #fcfdff; }
+.edit-box textarea { width: 100%; min-height: 100px; padding: 12px; border: 1px solid #007bff; border-radius: 6px; resize: vertical; box-sizing: border-box; font-family: inherit; font-size: 14px; line-height: 1.5; background-color: #fcfdff; }
 .edit-actions { margin-top: 8px; display: flex; justify-content: flex-end; gap: 8px; }
 .edit-actions button { padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
 .save-edit { background: #28a745; color: #fff; }
@@ -283,8 +280,8 @@ main { flex: 1; padding: 40px 20px; }
 
                             <?php if ($userID == $c['userID']): ?>
                                 <div class="comment-dropdown" style="position: absolute; top: 10px; right: 0;">
-                                    <button class="three-dots-horizontal" style="background:none; border:none; cursor:pointer;">⋯</button>
-                                    <div class="dropdown-content" style="right:0;">
+                                    <button class="three-dots-horizontal">⋯</button>
+                                    <div class="dropdown-content">
                                         <button onclick="enableEdit(<?= $c['commentID'] ?>)">Edit</button>
                                         <form method="POST" onsubmit="return confirm('Delete this comment?');">
                                             <input type="hidden" name="commentID" value="<?= $c['commentID'] ?>">
@@ -304,7 +301,6 @@ main { flex: 1; padding: 40px 20px; }
 </main>
 
 <script>
-// All original JS logic preserved (Read more, Voting, Edit logic, Dropdowns)
 function initReadMore() {
     document.querySelectorAll('.comment-text-container').forEach(container => {
         const commentId = container.id.replace('comment-container-', '');
@@ -381,14 +377,21 @@ function enableEdit(commentID) {
     const textEl = commentDiv.querySelector(".comment-text");
     const containerEl = commentDiv.querySelector(".comment-text-container");
     const footer = commentDiv.querySelector(".comment-meta-footer");
+    
     const currentText = textEl.innerText.trim();
+    
     containerEl.style.display = "none";
     footer.style.display = "none";
+    
     const editBox = document.createElement("div");
     editBox.classList.add("edit-box");
-    editBox.innerHTML = `<textarea id="edit-input-${commentID}" oninput="autoResize(this)">${currentText}</textarea>
-        <div class="edit-actions"><button class="save-edit" onclick="saveEdit(${commentID})">Save</button>
-        <button class="cancel-edit" onclick="cancelEdit(${commentID})">Cancel</button></div>`;
+    editBox.innerHTML = `
+        <textarea id="edit-input-${commentID}" oninput="autoResize(this)">${currentText}</textarea>
+        <div class="edit-actions">
+            <button class="save-edit" onclick="saveEdit(${commentID})">Save</button>
+            <button class="cancel-edit" onclick="cancelEdit(${commentID})">Cancel</button>
+        </div>`;
+    
     commentDiv.insertBefore(editBox, footer);
     autoResize(document.getElementById("edit-input-" + commentID));
 }
@@ -397,13 +400,23 @@ function cancelEdit(commentID) {
     const commentDiv = document.getElementById("comment-" + commentID);
     const eb = commentDiv.querySelector(".edit-box");
     if (eb) eb.remove();
-    commentDiv.querySelector(".comment-text-container").style.display = "-webkit-box";
+    
+    const container = commentDiv.querySelector(".comment-text-container");
+    container.style.display = "-webkit-box"; // Restore CSS property
+    
     commentDiv.querySelector(".comment-meta-footer").style.display = "block";
     initReadMore(); 
 }
 
 function saveEdit(commentID) {
-    const newText = document.getElementById("edit-input-" + commentID).value.trim();
+    const inputEl = document.getElementById("edit-input-" + commentID);
+    const newText = inputEl.value.trim();
+    
+    if (newText === "") {
+        alert("Comment cannot be empty");
+        return;
+    }
+
     fetch("update_comment.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -412,9 +425,17 @@ function saveEdit(commentID) {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            document.getElementById("comment-" + commentID).querySelector(".comment-text").innerText = newText;
+            // Update the text in the UI
+            const textElement = document.getElementById("comment-" + commentID).querySelector(".comment-text");
+            textElement.innerText = newText;
             cancelEdit(commentID);
-        } else alert(data.message);
+        } else {
+            alert(data.message || "Failed to update comment.");
+        }
+    })
+    .catch(err => {
+        console.error("Fetch error:", err);
+        alert("An error occurred.");
     });
 }
 
@@ -424,9 +445,14 @@ function enableForumEdit() {
     forumContent.style.display = "none";
     const editBox = document.createElement("div");
     editBox.classList.add("edit-box");
-    editBox.innerHTML = `<form method="POST"><textarea name="forum_content" oninput="autoResize(this)">${currentText}</textarea>
-            <div class="edit-actions"><button type="submit" name="edit_forum" class="save-edit">Save</button>
-            <button type="button" class="cancel-edit" onclick="cancelForumEdit()">Cancel</button></div></form>`;
+    editBox.innerHTML = `
+        <form method="POST">
+            <textarea name="forum_content" oninput="autoResize(this)">${currentText}</textarea>
+            <div class="edit-actions">
+                <button type="submit" name="edit_forum" class="save-edit">Save</button>
+                <button type="button" class="cancel-edit" onclick="cancelForumEdit()">Cancel</button>
+            </div>
+        </form>`;
     forumContent.parentNode.insertBefore(editBox, forumContent.nextSibling);
     autoResize(editBox.querySelector('textarea'));
 }

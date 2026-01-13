@@ -29,7 +29,7 @@ if ($comment === "") {
 }
 
 // Update query (update updatedAt as edit timestamp)
-$stmt = $conn->prepare("UPDATE Comment SET comment = ?, updatedAt = NOW() WHERE commentID = ? AND userID = ?");
+$stmt = $conn->prepare("UPDATE comment SET comment = ?, updatedAt = NOW() WHERE commentID = ? AND userID = ?");
 $stmt->bind_param("sii", $comment, $commentID, $userID);
 
 if ($stmt->execute()) {
