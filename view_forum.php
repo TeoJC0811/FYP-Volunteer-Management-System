@@ -160,6 +160,7 @@ main { flex: 1; padding: 40px 20px; }
     width: fit-content; 
     display: flex;
     align-items: center;
+    margin-left: 250px;
 }
 .back-btn:hover { background-color: #333; }
 
