@@ -59,7 +59,7 @@ if ($userID) {
     <div class="nav-left">
         <div class="nav-logo">
             <a href="index.php">
-                <img src="uploads\ServeTogetherIcon1.png" alt="ServeTogether Logo" style="height:40px;">
+                <img src="uploads/ServeTogetherIcon1.png" alt="ServeTogether Logo" style="height:40px;">
             </a>
         </div>
         <div class="nav-links">
