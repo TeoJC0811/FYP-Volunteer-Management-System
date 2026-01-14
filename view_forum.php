@@ -135,7 +135,7 @@ main { flex: 1; padding: 40px 20px; }
 .content-wrapper { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
 .container-box { width: 100%; padding: 30px; border: 1px solid #ddd; border-radius: 10px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); box-sizing: border-box; }
 
-.back-btn { text-decoration: none; color: white; background-color: #555; padding: 8px 15px; border-radius: 5px; font-weight: bold; width: fit-content; display: flex; align-items: center; }
+.back-btn { text-decoration: none; color: white; background-color: #555; padding: 8px 15px; border-radius: 5px; font-weight: bold; width: fit-content; display: flex; align-items: center; margin-left: 250px;}
 .back-btn:hover { background-color: #333; }
 
 .forum-header { display: flex; justify-content: space-between; align-items: center; }
