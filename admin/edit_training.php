@@ -25,7 +25,6 @@ $message = $error = "";
 ================================== */
 if (isset($_GET['delete_img'])) {
     $imgID = intval($_GET['delete_img']);
-    // Check by ID only to allow deletion of existing NULL/blank records
     $checkImg = $conn->prepare("SELECT imageUrl FROM activitygallery WHERE galleryID = ? AND activityID = ?");
     $checkImg->bind_param("ii", $imgID, $courseID);
     $checkImg->execute();
@@ -229,7 +228,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $uploadGalleryDir = "../uploads/course_gallery/"; 
                     if (!is_dir($uploadGalleryDir)) { mkdir($uploadGalleryDir, 0777, true); }
                     
-                    // CORRECTED: Fixed ENUM value to match your DB ('course')
                     $activityTypeLabel = 'course';
 
                     foreach ($_FILES['galleryImages']['tmp_name'] as $i => $tmpName) {
@@ -262,7 +260,6 @@ if(isset($_GET['msg'])) {
 /* ==========================
     GET CURRENT GALLERY IMAGES
 ========================== */
-// CORRECTED: Fetch images based on ID only so old NULL/blank records display correctly
 $gallery = $conn->prepare("SELECT * FROM activitygallery WHERE activityID=?");
 $gallery->bind_param("i", $courseID);
 $gallery->execute();
@@ -290,35 +287,21 @@ button { background:#333; color:#fff; border:none; cursor:pointer; margin-top:20
 button:hover { background:#555; }
 button[onclick="openModal()"] { background:#6c5ce7; margin-top:5px; } 
 
-/* CERTIFICATE STYLING */
 .cert-management-box { background: #f9f9f9; border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin-top: 10px; }
 .cert-actions { display: flex; gap: 10px; margin-top: 10px; align-items: center; }
 .btn-view-pdf { display: inline-block; background: #333; color: #fff !important; padding: 10px 15px; border-radius: 6px; text-decoration: none; font-size: 14px; }
 .btn-remove-cert { display: inline-block; background: #ff4757; color: #fff !important; padding: 10px 15px; border-radius: 6px; text-decoration: none; font-size: 14px; }
 
-/* GALLERY STYLING */
 .gallery-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap:15px; margin-top:10px; }
 .gallery-item { position: relative; width: 100%; height: 110px; }
 .gallery-item img { width:100%; height:110px; object-fit:cover; border-radius:6px; border:1px solid #ccc; }
-
-.btn-del-img {
-    position: absolute; top: -8px; right: -8px;
-    background: #ff4757; color: white !important;
-    border: none; width: 24px; height: 24px;
-    border-radius: 50%; font-size: 14px; font-weight: bold;
-    cursor: pointer; display: flex; align-items: center;
-    justify-content: center; text-decoration: none; z-index: 10;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2); padding: 0; line-height: 1;
-}
-
+.btn-del-img { position: absolute; top: -8px; right: -8px; background: #ff4757; color: white !important; border: none; width: 24px; height: 24px; border-radius: 50%; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.2); padding: 0; line-height: 1; }
 .preview-badge { position: absolute; bottom: 5px; left: 5px; background: #2ed573; color: white; font-size: 10px; padding: 2px 5px; border-radius: 4px; font-weight: bold; pointer-events: none; }
 
-/* MODAL STYLING */
 .modal-bg { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.45); display:none; justify-content:center; align-items:center; z-index:1000; }
 .modal-box { width:420px; background:#fff; border-radius:10px; max-height:80vh; position:relative; box-shadow: 0 5px 25px rgba(0,0,0,0.15); display: flex; flex-direction: column; overflow: hidden; }
 .modal-header { padding: 20px 22px 10px 22px; border-bottom: 1px solid #eee; }
 .modal-footer { padding: 10px 22px 20px 22px; border-top: 1px solid #eee; background: #fff; }
-.modal-footer button { margin-top: 0; }
 #pastCourseList { flex: 1; overflow-y: auto; padding: 0 22px; }
 .modal-close { position:absolute; top:12px; right:15px; cursor:pointer; font-size:20px; color: #777; z-index: 1001; }
 #searchPastInput { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; margin-top: 10px; height: 44px; }
@@ -377,7 +360,7 @@ button[onclick="openModal()"] { background:#6c5ce7; margin-top:5px; }
                         <img src="../<?= $row['imageUrl'] ?>">
                     </div>
                 <?php endwhile; ?>
-                </div>
+            </div>
             
             <div class="form-row">
                 <div>
@@ -425,18 +408,14 @@ button[onclick="openModal()"] { background:#6c5ce7; margin-top:5px; }
                 </div>
             </div>
 
+            <label>Registration Deadline <span class="req">*</span></label>
+            <input type="date" name="deadline" id="deadlineInput" value="<?= $course['deadline'] ?>" required>
+
             <div class="form-row">
-                <div>
-                    <label>Registration Deadline <span class="req">*</span></label>
-                    <input type="date" name="deadline" id="deadlineInput" value="<?= $course['deadline'] ?>" required>
-                </div>
                 <div>
                     <label>Max Participants <span class="req">*</span></label>
                     <input type="number" name="maxParticipant" value="<?= $course['maxParticipant'] ?>" min="1" required>
                 </div>
-            </div>
-
-            <div class="form-row">
                 <div>
                     <label>Fee (RM) <span class="req">*</span></label>
                     <input type="number" step="0.01" name="fee" value="<?= $course['fee'] ?>" required>
@@ -464,7 +443,7 @@ button[onclick="openModal()"] { background:#6c5ce7; margin-top:5px; }
             
             <p style="background:#eef;padding:14px;border-radius:6px;margin-top:25px;">
                 <strong>Optional: Link Past Training</strong><br>
-                Link previous training courses to show continuity.
+                Link previous training courses to show continuity or history.
             </p>
 
             <button type="button" onclick="openModal()" style="background:#6c5ce7;">Select Past Training</button>
@@ -503,18 +482,13 @@ button[onclick="openModal()"] { background:#6c5ce7; margin-top:5px; }
 </div>
 
 <script>
-/* =====================================
-    MULTIPLE UPLOAD & INDIVIDUAL PREVIEW DELETE
-===================================== */
 const dt = new DataTransfer(); 
 const galleryPicker = document.getElementById('galleryInputPicker');
 const galleryPostInput = document.getElementById('galleryPostInput');
 const galleryGrid = document.getElementById('galleryGrid');
 
 galleryPicker.addEventListener('change', function() {
-    for (let file of this.files) {
-        dt.items.add(file); 
-    }
+    for (let file of this.files) { dt.items.add(file); }
     this.value = ''; 
     refreshGalleryDisplay();
 });
@@ -547,9 +521,6 @@ function removeSelectedFile(index) {
     }
 }
 
-/* =====================================
-    MODAL & SEARCH FUNCTIONS
-===================================== */
 const modalBg = document.getElementById("pastModal");
 const modalBox = document.getElementById("modalBox");
 
@@ -574,9 +545,6 @@ function searchPastCourses(term) {
     });
 }
 
-/* =====================================
-    DATE VALIDATION
-===================================== */
 const startInput = document.getElementById('startDateInput');
 const endInput = document.getElementById('endDateInput');
 const deadlineInput = document.getElementById('deadlineInput');

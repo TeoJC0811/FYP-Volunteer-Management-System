@@ -399,15 +399,15 @@ $galleryResult = $gallery->get_result();
                     <input type="date" name="startDate" id="startDateInput" value="<?= $event['startDate'] ?>" required>
                 </div>
                 <div>
-                    <label>Start Time <span class="req">*</span></label>
-                    <input type="time" name="startTime" value="<?= $event['startTime'] ?>" required>
+                    <label>End Date <span class="req">*</span></label>
+                    <input type="date" name="endDate" id="endDateInput" value="<?= $event['endDate'] ?>" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div>
-                    <label>End Date <span class="req">*</span></label>
-                    <input type="date" name="endDate" id="endDateInput" value="<?= $event['endDate'] ?>" required>
+                    <label>Start Time <span class="req">*</span></label>
+                    <input type="time" name="startTime" value="<?= $event['startTime'] ?>" required>
                 </div>
                 <div>
                     <label>End Time <span class="req">*</span></label>
@@ -415,7 +415,7 @@ $galleryResult = $gallery->get_result();
                 </div>
             </div>
 
-            <label>Deadline <span class="req">*</span></label>
+            <label>Registration Deadline <span class="req">*</span></label>
             <input type="date" name="deadline" id="deadlineInput" value="<?= $event['deadline'] ?>" required>
 
             <div class="form-row">
