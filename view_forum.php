@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_comment'])) {
     exit;
 }
 
-// Fetch forum post - includes forumImage
+// Fetch forum post
 $sql = "
     SELECT f.forumID, f.title, f.content, f.forumImage, f.createdDate, f.userID, u.userName
     FROM forum f
@@ -132,36 +132,10 @@ html, body { height: 100%; margin: 0; }
 body { display: flex; flex-direction: column; min-height: 100vh; background-color: #f5f7f9; }
 main { flex: 1; padding: 40px 20px; }
 
-.content-wrapper {
-    max-width: 800px; 
-    margin: 0 auto; 
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
+.content-wrapper { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+.container-box { width: 100%; padding: 30px; border: 1px solid #ddd; border-radius: 10px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); box-sizing: border-box; }
 
-.container-box { 
-    width: 100%;
-    padding: 30px; 
-    border: 1px solid #ddd;
-    border-radius: 10px; 
-    background: #fff; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    box-sizing: border-box;
-}
-
-.back-btn { 
-    text-decoration: none; 
-    color: white; 
-    background-color: #555; 
-    padding: 8px 15px; 
-    border-radius: 5px; 
-    font-weight: bold; 
-    width: fit-content; 
-    display: flex;
-    align-items: center;
-    margin-left: 250px;
-}
+.back-btn { text-decoration: none; color: white; background-color: #555; padding: 8px 15px; border-radius: 5px; font-weight: bold; width: fit-content; display: flex; align-items: center; }
 .back-btn:hover { background-color: #333; }
 
 .forum-header { display: flex; justify-content: space-between; align-items: center; }
@@ -194,7 +168,10 @@ main { flex: 1; padding: 40px 20px; }
 
 .comments { margin-top: 30px; }
 .comment { border-bottom: 1px solid #ddd; padding: 10px 0; position: relative; }
+.comment-meta-footer { margin-top: 5px; }
 .comment small { color: #777; }
+.updated-tag { font-style: italic; color: #3498db; font-size: 0.85em; margin-left: 5px; }
+
 .comment-form form { display: flex; flex-direction: column; gap: 8px; }
 .comment-form textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; resize: none; box-sizing: border-box; }
 .comment-form button { align-self: flex-end; padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
@@ -245,11 +222,9 @@ main { flex: 1; padding: 40px 20px; }
             <div class="forum-content" id="forum-content"><?= nl2br(htmlspecialchars($forum['content'] ?? '')) ?></div>
 
             <div class="vote-box">
-                <button class="vote-btn upvote <?= $userVote == 1 ? 'active' : '' ?>"
-                        onclick="castVote(<?= $forumID ?>, 1, this)">▲</button>
+                <button class="vote-btn upvote <?= $userVote == 1 ? 'active' : '' ?>" onclick="castVote(<?= $forumID ?>, 1, this)">▲</button>
                 <span class="vote-count" id="vote-count-<?= $forumID ?>"><?= (int)$totalVotes ?></span>
-                <button class="vote-btn downvote <?= $userVote == -1 ? 'active' : '' ?>"
-                        onclick="castVote(<?= $forumID ?>, -1, this)">▼</button>
+                <button class="vote-btn downvote <?= $userVote == -1 ? 'active' : '' ?>" onclick="castVote(<?= $forumID ?>, -1, this)">▼</button>
             </div>
 
             <div class="comments">
@@ -276,6 +251,11 @@ main { flex: 1; padding: 40px 20px; }
                             <div class="comment-meta-footer">
                                 <small>
                                     — <?= htmlspecialchars($c['userName'] ?? '') ?>, <?= $c['createdDate'] ?>
+                                    <span class="updated-at-display" id="updated-at-<?= $c['commentID'] ?>">
+                                        <?php if ($c['updatedAt']): ?>
+                                            <span class="updated-tag">(Updated: <?= $c['updatedAt'] ?>)</span>
+                                        <?php endif; ?>
+                                    </span>
                                 </small>
                             </div>
 
@@ -403,7 +383,7 @@ function cancelEdit(commentID) {
     if (eb) eb.remove();
     
     const container = commentDiv.querySelector(".comment-text-container");
-    container.style.display = "-webkit-box"; // Restore CSS property
+    container.style.display = "-webkit-box"; 
     
     commentDiv.querySelector(".comment-meta-footer").style.display = "block";
     initReadMore(); 
@@ -426,9 +406,14 @@ function saveEdit(commentID) {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            // Update the text in the UI
-            const textElement = document.getElementById("comment-" + commentID).querySelector(".comment-text");
+            const commentDiv = document.getElementById("comment-" + commentID);
+            const textElement = commentDiv.querySelector(".comment-text");
             textElement.innerText = newText;
+            
+            // Update the "Updated at" display
+            const updateSpan = document.getElementById("updated-at-" + commentID);
+            updateSpan.innerHTML = `<span class="updated-tag">(Updated: ${data.updatedAt})</span>`;
+            
             cancelEdit(commentID);
         } else {
             alert(data.message || "Failed to update comment.");
