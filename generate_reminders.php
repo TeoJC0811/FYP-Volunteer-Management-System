@@ -37,7 +37,7 @@ foreach ($events as $ev) {
     $message = "📌 Reminder: Event '" . $ev['eventName'] . "' is happening on " . $ev['startDate'];
 
     // Avoid duplicate reminders
-    $check = $conn->prepare("SELECT COUNT(*) FROM Notification WHERE userID=? AND activityID=? AND message=?");
+    $check = $conn->prepare("SELECT COUNT(*) FROM notification WHERE userID=? AND activityID=? AND message=?");
     $check->bind_param("iis", $ev['userID'], $ev['eventID'], $message);
     $check->execute();
     $check->bind_result($count);
@@ -45,7 +45,7 @@ foreach ($events as $ev) {
     $check->close();
 
     if ($count == 0) {
-        $insert = $conn->prepare("INSERT INTO Notification (message, userID, activityID, scheduleID) VALUES (?, ?, ?, NULL)");
+        $insert = $conn->prepare("INSERT INTO notification (message, userID, activityID, scheduleID) VALUES (?, ?, ?, NULL)");
         $insert->bind_param("sii", $message, $ev['userID'], $ev['eventID']);
         $insert->execute();
         $insert->close();
@@ -56,7 +56,7 @@ foreach ($events as $ev) {
 foreach ($courses as $co) {
     $message = "🎓 Reminder: Course '" . $co['courseName'] . "' is happening on " . $co['courseDate'];
 
-    $check = $conn->prepare("SELECT COUNT(*) FROM Notification WHERE userID=? AND activityID=? AND message=?");
+    $check = $conn->prepare("SELECT COUNT(*) FROM notification WHERE userID=? AND activityID=? AND message=?");
     $check->bind_param("iis", $co['userID'], $co['courseID'], $message);
     $check->execute();
     $check->bind_result($count);
@@ -64,7 +64,7 @@ foreach ($courses as $co) {
     $check->close();
 
     if ($count == 0) {
-        $insert = $conn->prepare("INSERT INTO Notification (message, userID, activityID, scheduleID) VALUES (?, ?, ?, NULL)");
+        $insert = $conn->prepare("INSERT INTO notification (message, userID, activityID, scheduleID) VALUES (?, ?, ?, NULL)");
         $insert->bind_param("sii", $message, $co['userID'], $co['courseID']);
         $insert->execute();
         $insert->close();
