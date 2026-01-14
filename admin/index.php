@@ -15,17 +15,16 @@ $userName = isset($_SESSION['userName']) ? htmlspecialchars($_SESSION['userName'
 $userRole = isset($_SESSION['role']) ? ucfirst($_SESSION['role']) : "User";
 $isOrganizer = (strtolower($userRole) === 'organizer');
 
-// --- MOCK-UP DATA for visual interest (Replace with actual DB queries later) ---
+// --- MOCK-UP DATA ---
 $stats = [
-    'events' => ['count' => 12, 'label' => 'Total Events', 'icon' => '📅', 'color' => '#3498db', 'link' => 'select_event_registration.php'],
-    'courses' => ['count' => 5, 'label' => 'Total Courses', 'icon' => '📚', 'color' => '#2ecc71', 'link' => 'select_training_registration.php'],
-    // PENDING REGISTRATION STAT CARD IS NOW REMOVED
+    'events' => ['count' => 12, 'label' => 'Total Events', 'icon' => '📅', 'color' => '#3498db'],
+    'courses' => ['count' => 5, 'label' => 'Total Courses', 'icon' => '📚', 'color' => '#2ecc71'],
 ];
 
 if (!$isOrganizer) {
-    // Add admin-specific stats and links
-    $stats['total_users'] = ['count' => 150, 'label' => 'Registered Users', 'icon' => '👥', 'color' => '#9b59b6', 'link' => 'manage_user.php'];
-    $stats['rewards'] = ['count' => 8, 'label' => 'Active Rewards', 'icon' => '🎁', 'color' => '#e74c3c', 'link' => 'manage_reward.php'];
+    // Add admin-specific stats
+    $stats['total_users'] = ['count' => 150, 'label' => 'Registered Users', 'icon' => '👥', 'color' => '#9b59b6'];
+    $stats['rewards'] = ['count' => 8, 'label' => 'Active Rewards', 'icon' => '🎁', 'color' => '#e74c3c'];
 }
 // --- END MOCK-UP DATA ---
 ?>
@@ -36,7 +35,7 @@ if (!$isOrganizer) {
     <title><?= $userRole ?> Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* CSS for the new dashboard cards */
+        /* Container for dashboard cards */
         .dashboard-header {
             background-color: #ffffff;
             padding: 20px;
@@ -57,25 +56,23 @@ if (!$isOrganizer) {
 
         .stats-grid {
             display: grid;
-            /* Adjust grid columns to look good with 2-4 items */
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
             gap: 20px;
             margin-top: 20px;
         }
+
+        /* Stat Card - Changed to Div behavior (No hover effect, no pointer) */
         .stat-card {
             background-color: #ffffff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            cursor: default; /* Arrow cursor instead of hand pointer */
         }
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-        }
+
         .stat-card .icon {
             font-size: 2.5em;
             margin-bottom: 10px;
@@ -91,7 +88,7 @@ if (!$isOrganizer) {
             margin-top: 5px;
         }
 
-        /* NEW Quick Links CSS */
+        /* Quick Links Area */
         .quick-links {
             margin-top: 30px;
             padding: 20px;
@@ -131,41 +128,35 @@ if (!$isOrganizer) {
     <div class="dashboard-header">
         <p class="welcome">👋 Welcome, **<?= $userName ?>** (<?= $userRole ?>)</p>
         <h2><?= $userRole ?> Dashboard Overview</h2>
-        <p>
-            Quick access and summary of key activities and resources.
-        </p>
+        <p>Summary of key activities and resources.</p>
     </div>
 
     <div class="stats-grid">
         <?php foreach ($stats as $key => $stat): ?>
-        <a href="<?= htmlspecialchars($stat['link'] ?? '#') ?>" class="stat-card" style="border-left: 5px solid <?= $stat['color']; ?>;">
+        <div class="stat-card" style="border-left: 5px solid <?= $stat['color']; ?>;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div class="icon" style="color: <?= $stat['color']; ?>;"><?= $stat['icon']; ?></div>
                 <div class="count"><?= $stat['count']; ?></div>
             </div>
             <div class="label"><?= $stat['label']; ?></div>
-        </a>
+        </div>
         <?php endforeach; ?>
     </div>
+
     <div class="quick-links">
         <h3>Quick Access Actions</h3>
         
         <?php if ($isOrganizer): ?>
             <a href="select_event_registration.php" class="action-button btn-event">📅 Go to Event Management</a>
             <a href="select_training_registration.php" class="action-button btn-course">📚 Go to Course Management</a>
-            
-            <?php else: ?>
-            <a href="select_event_registration.php" class="action-button btn-event">📅 Manage Events/Registration</a>
-            <a href="select_training_registration.php" class="action-button btn-course">📚 Manage Courses/Training</a>
+        <?php else: ?>
             <a href="manage_user.php" class="action-button btn-users">👥 Manage Users & Roles</a>
             <a href="manage_reward.php" class="action-button btn-rewards">🎁 Manage Rewards Program</a>
-            
         <?php endif; ?>
     </div>
-    </div>
+</div>
 
 <script>
-// Keep your existing JavaScript function
 function toggleMenu(id) {
     const menu = document.getElementById(id);
     menu.style.display = (menu.style.display === "block") ? "none" : "block";

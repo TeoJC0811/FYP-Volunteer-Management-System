@@ -42,7 +42,8 @@ if ($userID) {
     $stmtStatus->execute();
     $resStatus = $stmtStatus->get_result();
     if ($statusData = $resStatus->fetch_assoc()) {
-        if ($statusData['userRoles'] === 'organizer' && $statusData['status'] === 'approved') {
+        // Check if role contains organizer and status is approved
+        if (strpos($statusData['userRoles'], 'organizer') !== false && $statusData['status'] === 'approved') {
             $isApprovedOrganizer = true;
         }
     }
@@ -93,12 +94,13 @@ if ($userID) {
                 <a href="wishlist.php">Wishlist</a>
 
                 <?php if ($isApprovedOrganizer): ?>
-                    <a href="admin/login.php">Organizer Portal</a>
+                    <a href="admin/index.php" style="color: #2ecc71; font-weight: bold;">Organizer Portal</a>
                 <?php endif; ?>
 
                 <?php if ($role === 'admin'): ?>
-                    <a href="admin/index.php">Admin</a>
+                    <a href="admin/index.php" style="color: #3498db; font-weight: bold;">Admin Panel</a>
                 <?php endif; ?>
+
                 <a href="logout.php">Logout</a>
             </div>
 
@@ -112,7 +114,7 @@ if ($userID) {
 </nav>
 
 <style>
-/* --- TOAST STYLING (Plain White / Outlook Style) --- */
+/* --- TOAST STYLING --- */
 .toast-container { position: fixed; top: 20px; right: 20px; z-index: 10002; }
 .toast-box { 
     background: white; 
@@ -153,7 +155,7 @@ nav a, .profile-menu a { text-decoration: none !important; color: #333 !importan
 .noti-bell { position: relative; font-size: 20px; }
 .noti-dot { position: absolute; top: 6px; right: 8px; height: 10px; width: 10px; background-color: #ff4d4d; border-radius: 50%; border: 2px solid white; }
 
-.profile-menu { position: absolute; right: 20px; top: 58px; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 9999; width: 170px; overflow: hidden; }
+.profile-menu { position: absolute; right: 20px; top: 58px; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 9999; width: 185px; overflow: hidden; }
 .profile-menu a { display: block; padding: 12px 15px; font-size: 14px; }
 
 .auth-buttons { display: flex; gap: 15px; align-items: center; }
@@ -177,17 +179,13 @@ function closeToast() {
     }
 }
 
-// AJAX Polling for Real-time Notifications
 function fetchNewNotifications() {
     fetch('check_notification.php')
     .then(response => response.json())
     .then(data => {
         if (data.new_notification) {
-            // 1. Update Bell Dot
             updateBellDot(data.unread_count);
-            // 2. Show Toast
             showToastMessage(data.message);
-            // 3. Play Sound
             const sound = document.getElementById('notifSound');
             if(sound) {
                 sound.play().catch(e => console.log("Sound playback requires interaction."));
@@ -210,7 +208,6 @@ function showToastMessage(msg) {
             </div>
             <div class="toast-body">${msg}</div>
         </div>`;
-    // Auto-close after 8 seconds
     setTimeout(closeToast, 8000);
 }
 
@@ -229,7 +226,6 @@ function updateBellDot(count) {
     }
 }
 
-// Start polling every 5 seconds if user is logged in
 if (<?= $userID ? 'true' : 'false' ?>) {
     setInterval(fetchNewNotifications, 5000); 
 }

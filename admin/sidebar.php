@@ -21,8 +21,7 @@ $userName = $_SESSION['userName'] ?? null;
 
         <a href="index.php" class="<?= $currentPage == 'index.php' ? 'active' : '' ?>">Dashboard</a>
 
-        <?php if ($role === 'organizer' || $role === 'admin'): ?>
-
+        <?php if ($role === 'organizer'): ?>
             <a href="javascript:void(0)" class="dropdown-btn 
                 <?= in_array($currentPage, [
                     'select_event_registration.php','manage_event_registration.php',
@@ -60,7 +59,6 @@ $userName = $_SESSION['userName'] ?? null;
                 <a href="select_event_review.php" class="<?= $currentPage == 'select_event_review.php' ? 'active-child' : '' ?>">Review Event</a>
                 <a href="select_training_review.php" class="<?= $currentPage == 'select_training_review.php' ? 'active-child' : '' ?>">Review Training</a>
             </div>
-
         <?php endif; ?>
 
         <?php if ($role === 'admin'): ?>
