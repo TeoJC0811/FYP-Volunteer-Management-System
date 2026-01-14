@@ -69,11 +69,12 @@ $result = $conn->query($sql);
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-body { background-color: #f4f7f9; }
+body { background-color: #f4f7f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
+/* Adjusted main container for better grid fit */
 .main-content {
-    max-width: 1000px;
-    margin: 40px 40px 40px 350px; 
+    max-width: 1300px;
+    margin: 40px 40px 40px 260px; /* Aligned with sidebar width */
     padding: 20px;
 }
 
@@ -84,7 +85,7 @@ h2 {
     font-weight: 700;
 }
 
-/* 🔍 FORUM STYLE SEARCH BAR (Center Aligned, Light Blue) */
+/* 🔍 FORUM STYLE SEARCH BAR */
 .search-filter-bar {
     display: flex;
     justify-content: center;
@@ -144,16 +145,13 @@ h2 {
     gap: 8px;
 }
 
-.search-filter-bar a.btn-clear:hover { background-color: #dee2e6; }
-
-/* 📋 Event List & Cards - RETAINED */
+/* 📋 Grid updated for 3 columns */
 .event-list { 
-    max-width: 900px; 
-    margin: 30px auto; 
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 437px)); 
+    /* This forces 3 columns on desktop, then wraps automatically on smaller screens */
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
     gap: 25px;
-    justify-content: center; 
+    width: 100%;
 }
 
 .event-card {
@@ -166,6 +164,7 @@ h2 {
     display: flex;
     flex-direction: column;
 }
+
 .event-card:hover {
     box-shadow: 0 6px 20px rgba(0,0,0,0.15);
     transform: translateY(-3px);
@@ -174,9 +173,10 @@ h2 {
 .event-card h3 { 
     margin: 0 0 10px 0; 
     color: #34495e; 
-    font-size: 1.5rem;
+    font-size: 1.3rem; /* Slightly smaller for 3-col fit */
     padding-bottom: 10px;
     border-bottom: 1px solid #eee;
+    padding-right: 70px; /* Prevent overlap with badge */
 }
 
 .event-details {
@@ -184,21 +184,22 @@ h2 {
     flex-direction: column;
     gap: 8px;
     margin-bottom: 15px;
+    flex-grow: 1;
 }
 .detail-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     font-size: 14px;
     color: #555;
 }
 .detail-row i {
-    width: 25px;
-    color: #95a5a6;
-    text-align: center;
+    width: 20px;
+    color: #3498db;
+    margin-top: 3px;
 }
 .participant-count {
     margin-top: 10px;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     color: #2ecc71;
 }
@@ -209,22 +210,22 @@ h2 {
     right: 20px;
     padding: 4px 10px;
     border-radius: 15px;
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 10px;
+    font-weight: 700;
     text-transform: uppercase;
 }
 .status-upcoming { background-color: #3498db; color: white; }
 .status-past { background-color: #95a5a6; color: white; }
 
 .btn-manage {
-    margin-top: auto; 
-    padding: 10px 15px;
+    margin-top: 15px; 
+    padding: 12px 15px;
     background-color: #e67e22;
     color: white;
     text-decoration: none;
     border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
     text-align: center;
     transition: background 0.2s;
 }
@@ -234,10 +235,13 @@ h2 {
     grid-column: 1 / -1;
     text-align: center;
     padding: 50px;
+    background: white;
+    border-radius: 12px;
     color: #777;
 }
 
-@media (max-width: 1050px) {
+/* Responsiveness */
+@media (max-width: 1150px) {
     .main-content { margin: 40px auto; max-width: 95%; }
 }
 </style>
@@ -285,20 +289,23 @@ h2 {
                             <i class="fas fa-map-marker-alt"></i> 
                             <span><?= htmlspecialchars($row['eventLocation']); ?>, <?= htmlspecialchars($row['eventCountry']); ?></span>
                         </div>
+                        
+                        <p class="participant-count">
+                            <i class="fas fa-users"></i> 
+                            <?= number_format(intval($row['participantCount'])); ?> Participants
+                        </p>
                     </div>
                     
-                    <p class="participant-count">
-                        <i class="fas fa-users"></i> 
-                        <?= number_format(intval($row['participantCount'])); ?> Participants
-                    </p>
-
                     <a href="manage_event_registration.php?eventID=<?= $row['eventID']; ?>" class="btn-manage">
                         <i class="fas fa-user-edit"></i> Manage Registrations
                     </a>
                 </div>
             <?php endwhile; ?>
         <?php else: ?>
-            <p class="no-results">No events found matching your filters.</p>
+            <div class="no-results">
+                <i class="fas fa-search fa-3x" style="color:#ddd; margin-bottom:15px;"></i>
+                <p>No events found matching your filters.</p>
+            </div>
         <?php endif; ?>
     </div>
 </div>
