@@ -2,9 +2,6 @@
 session_start();
 include("../db.php");
 
-// Use Cloudinary classes
-use Cloudinary\Api\Upload\UploadApi;
-
 // Only allow admins or organizers
 if (!isset($_SESSION['userID']) || !in_array($_SESSION['role'], ['admin', 'organizer'])) {
     header("Location: login.php");
@@ -53,15 +50,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $eventCountry     = trim($_POST['eventCountry']);
     $categoryID       = intval($_POST['categoryID']);
     $startDate        = $_POST['startDate'];
-    $startTime        = $_POST['startTime']; 
+    $startTime        = $_POST['startTime']; // NEW
     $endDate          = $_POST['endDate'];
-    $endTime          = $_POST['endTime'];   
+    $endTime          = $_POST['endTime'];   // NEW
     $deadline         = $_POST['deadline'];
     $maxParticipant   = intval($_POST['maxParticipant']);
     $point            = intval($_POST['point']);
     $description      = trim($_POST['description']);
 
-    /* READ CSV PAST EVENT IDS */
+    /* ==========================
+        READ CSV PAST EVENT IDS
+    ========================== */
     $selectedPastEvents = [];
     if (!empty($_POST['pastEvents'][0])) {
         $selectedPastEvents = explode(",", $_POST['pastEvents'][0]);
@@ -92,18 +91,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         if (!$isError) {
-            /* COVER IMAGE UPLOAD TO CLOUDINARY */
-            $coverImageUrl = null;
-            if (!empty($_FILES['coverImage']['tmp_name'])) {
-                try {
-                    $uploadApi = new UploadApi();
-                    $uploadResult = $uploadApi->upload($_FILES['coverImage']['tmp_name'], [
-                        'folder' => 'serve_together/event_covers'
-                    ]);
-                    $coverImageUrl = $uploadResult['secure_url'];
-                } catch (Exception $e) {
-                    $error = "❌ Failed to upload cover image to cloud: " . $e->getMessage();
-                    $isError = true;
+            /* COVER IMAGE */
+            $coverImageName = null;
+            if (!empty($_FILES['coverImage']['name'])) {
+                $ext = pathinfo($_FILES['coverImage']['name'], PATHINFO_EXTENSION);
+                $coverImageName = time() . "_cover." . $ext;
+                $uploadDir = "../uploads/event_cover/"; 
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+                if (!move_uploaded_file($_FILES['coverImage']['tmp_name'], $uploadDir . $coverImageName)) {
+                     $error = "❌ Failed to upload cover image.";
+                     $isError = true;
                 }
             } else {
                  $error = "❌ Cover image is required.";
@@ -112,7 +111,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
         if (!$isError) {
-            /* INSERT EVENT */
+            /* INSERT EVENT - Added startTime and endTime */
             $sql = "INSERT INTO event 
                     (eventName, coverImage, eventLocation, eventCountry, description,
                      startDate, startTime, endDate, endTime, deadline, participantNum, maxParticipant, point, organizerID, categoryID)
@@ -122,7 +121,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->bind_param(
                 "ssssssssssiiii",
                 $eventName,
-                $coverImageUrl,
+                $coverImageName,
                 $eventLocation,
                 $eventCountry,
                 $description,
@@ -149,28 +148,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     }
                 }
 
-                /* UPLOAD GALLERY IMAGES TO CLOUDINARY */
+                /* UPLOAD GALLERY IMAGES */
                 if (!empty($_FILES['galleryImages']['name'][0])) {
-                    try {
-                        $uploadApi = new UploadApi();
-                        foreach ($_FILES['galleryImages']['tmp_name'] as $i => $tmpName) {
-                            if (!empty($tmpName)) {
-                                $gResult = $uploadApi->upload($tmpName, [
-                                    'folder' => 'serve_together/event_gallery'
-                                ]);
-                                $imgPath = $gResult['secure_url'];
-                                
-                                $g = $conn->prepare("
-                                    INSERT INTO activitygallery (activityID, activityType, imageUrl, caption)
-                                    VALUES (?, 'event', ?, '')
-                                ");
-                                $g->bind_param("is", $newEventID, $imgPath);
-                                $g->execute();
-                            }
-                        }
-                    } catch (Exception $e) {
-                        // We continue even if gallery fails, but log error
-                        error_log("Gallery upload failed: " . $e->getMessage());
+                    $uploadGalleryDir = "../uploads/event_gallery/"; 
+                    if (!is_dir($uploadGalleryDir)) {
+                        mkdir($uploadGalleryDir, 0777, true);
+                    }
+                    
+                    foreach ($_FILES['galleryImages']['tmp_name'] as $i => $tmpName) {
+                        $fileName = time() . "_" . basename($_FILES['galleryImages']['name'][$i]);
+                        move_uploaded_file($tmpName, $uploadGalleryDir . $fileName);
+                        $imgPath = "uploads/event_gallery/" . $fileName;
+                        $g = $conn->prepare("
+                            INSERT INTO activitygallery (activityID, activityType, imageUrl, caption)
+                            VALUES (?, 'event', ?, '')
+                        ");
+                        $g->bind_param("is", $newEventID, $imgPath);
+                        $g->execute();
                     }
                 }
 
@@ -192,26 +186,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <meta charset="UTF-8">
 <title>Add Event - Admin</title>
 <link rel="stylesheet" href="style.css?v=<?= time(); ?>">
+
 <style>
 :root { --form-width: 800px; }
 * { box-sizing: border-box; }
-.form-container { max-width: var(--form-width); margin:30px auto; background:#f9f9f9; padding:30px; border-radius:10px; border: 1px solid #ddd;}
+.form-container { max-width: var(--form-width); margin:30px auto; background:#f9f9f9; padding:30px; border-radius:10px; }
 .form-row { display: flex; gap: 20px; margin-bottom: 5px; }
 .form-row > div { flex: 1; }
+.form-row input, .form-row select { width: 100%; }
+.form-row label { margin-top: 15px; }
+.form-container form > label:first-of-type { margin-top: 0; }
+.form-row > div > label:first-child { margin-top: 0; }
+
 .req { color: red; }
-label { font-weight: bold; margin-top: 15px; display: block; }
+label { font-weight: bold; margin-top: 12px; display: block; }
+
 input:not([type="submit"]):not([type="button"]), select, textarea {
     width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #bbb; margin-top: 5px; box-sizing: border-box; height: 44px;
 }
 textarea { height: 130px; resize: none; }
+input[type="file"] { height: auto; padding: 10px 12px; }
+select { height: 44px; }
+
 button { width: 100%; padding: 14px; font-size: 16px; background: #007bff; border: none; color: white; border-radius: 6px; margin-top: 22px; cursor: pointer; }
+button[onclick="openModal()"] { background:#6c5ce7; margin-top:15px; padding:14px 12px; } 
 button[type="submit"] { background: #333; }
-.success { color: green; font-weight: bold; background: #eaffea; padding: 10px; border-radius: 5px; }
-.error { color: red; font-weight: bold; background: #ffeaea; padding: 10px; border-radius: 5px; }
+
 .modal-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.45); display: none; justify-content: center; align-items: center; z-index: 1000; }
-.modal-box { width: 420px; background: white; padding: 20px 22px; border-radius: 10px; max-height: 75vh; overflow-y: auto; position: relative; }
+.modal-box { width: 420px; background: white; padding: 20px 22px; border-radius: 10px; max-height: 75vh; overflow-y: auto; box-shadow: 0 5px 25px rgba(0,0,0,0.15); position: relative; }
+.modal-close { position: absolute; top: 12px; right: 15px; font-size: 20px; cursor: pointer; color: #777; }
+#searchPastInput { width: 90%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; display: block; margin: 0 auto 12px auto; }
+.event-row { display: flex; align-items: center; padding: 10px 6px; border-bottom: 1px solid #eee; gap: 10px; }
+.check-col { flex: 0 0 24px; display: flex; justify-content: center; }
+.event-info { flex: 1; }
+
 #coverImagePreview { display: none; width: 100%; max-height: 250px; object-fit: cover; margin-top: 15px; border-radius: 8px; border: 1px solid #ddd; }
-#galleryImagesPreview { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+#galleryImagesPreview { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; margin-bottom: 10px; }
 .gallery-img-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; }
 </style>
 </head>
@@ -300,6 +310,15 @@ button[type="submit"] { background: #333; }
                 </div>
             </div>
 
+            <p style="background:#eef; padding:14px; border-radius:6px; line-height:1.5; margin-top:14px;">
+                <strong>Optional: Link Past Volunteer Event</strong><br>
+                You may link previous volunteer event that are related to this course.
+                This allows participants to view review left by past participants.
+                If this is a brand-new event, you can safely skip this step.
+            </p>
+
+
+
             <button type="button" onclick="openModal()" style="background:#6c5ce7;">Select Past Events</button>
             <input type="hidden" name="pastEvents[]" id="pastEventsHolder" value="<?= htmlspecialchars(implode(',', $_POST['pastEvents'] ?? [])) ?>">
 
@@ -332,6 +351,9 @@ button[type="submit"] { background: #333; }
 </div>
 
 <script>
+let initialPastEvents = document.getElementById("pastEventsHolder").value;
+let selectedPastEvents = initialPastEvents ? initialPastEvents.split(',').map(Number) : [];
+
 function previewCoverImage(event) {
     const reader = new FileReader();
     const imagePreview = document.getElementById('coverImagePreview');
