@@ -17,7 +17,7 @@ if ($enumResult && $row = $enumResult->fetch_assoc()) {
     $countries = explode("','", $matches[1]);
 }
 
-// ✅ Fetch latest upcoming events
+// ✅ Fetch latest upcoming events (ONLY APPROVED)
 $eventQuery = "
     SELECT 
         e.eventID, e.eventName, e.eventLocation, e.eventCountry, e.startDate, e.endDate, 
@@ -26,13 +26,15 @@ $eventQuery = "
         c.categoryName
     FROM event e
     LEFT JOIN category c ON e.categoryID = c.categoryID
-    WHERE e.endDate >= CURDATE()
+    WHERE e.endDate >= CURDATE() AND e.status = 'approved'
     ORDER BY e.startDate ASC
     LIMIT 3
 ";
 $eventResult = $conn->query($eventQuery);
 
-// ✅ Fetch latest upcoming courses
+// ✅ Fetch latest upcoming courses (ONLY APPROVED)
+// Note: Assuming 'course' table also has a 'status' column. 
+// If not, remove 'AND c.status = 'approved'' from the query below.
 $courseQuery = "
     SELECT 
         c.courseID, c.courseName, c.courseLocation, c.courseCountry, 
@@ -41,7 +43,7 @@ $courseQuery = "
         cat.categoryName
     FROM course c
     LEFT JOIN category cat ON c.categoryID = cat.categoryID
-    WHERE c.endDate >= CURDATE()
+    WHERE c.endDate >= CURDATE() AND c.status = 'approved'
     ORDER BY c.startDate ASC
     LIMIT 3
 ";
@@ -196,7 +198,6 @@ $courseResult = $conn->query($courseQuery);
                 $cover = $event['coverImage'] ?? '';
                 $imagePath = "uploads/event_cover/" . htmlspecialchars(basename($cover));
                 $title = htmlspecialchars($event['eventName']);
-                // Concatenate full address
                 $fullAddress = htmlspecialchars($event['eventLocation'] . ", " . $event['eventCountry']);
                 
                 $dateText = ($event['startDate'] === $event['endDate']) 
@@ -232,7 +233,6 @@ $courseResult = $conn->query($courseQuery);
                 $cover = $course['coverImage'] ?? '';
                 $imagePath = "uploads/course_cover/" . htmlspecialchars(basename($cover));
                 $title = htmlspecialchars($course['courseName']);
-                // Concatenate full address
                 $fullAddress = htmlspecialchars($course['courseLocation'] . ", " . $course['courseCountry']);
                 
                 $dateText = ($course['startDate'] === $course['endDate']) 
