@@ -246,6 +246,7 @@ html, body {
 
     <div class="event-container">
     <?php
+        // UPDATED SQL: Added 'status = approved' to filter out pending/rejected events
         $sql = "
             SELECT 
                 e.*,
@@ -255,7 +256,7 @@ html, body {
             LEFT JOIN category c ON e.categoryID = c.categoryID
             LEFT JOIN usercategory uc 
                 ON uc.categoryID = e.categoryID AND uc.userID = " . intval($userID) . "
-            WHERE e.endDate >= CURDATE()
+            WHERE e.endDate >= CURDATE() AND e.status = 'approved'
         ";
 
         if (!empty($search)) {

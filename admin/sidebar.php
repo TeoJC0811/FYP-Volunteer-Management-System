@@ -72,6 +72,12 @@ $userName = $_SESSION['userName'] ?? null;
             </div>
 
             <a href="javascript:void(0)" class="dropdown-btn 
+                <?= in_array($currentPage, ['manage_event_approval.php']) ? 'active' : '' ?>">Approvals</a>
+            <div class="dropdown-container" style="<?= in_array($currentPage, ['manage_event_approval.php']) ? 'display:block;' : '' ?>">
+                <a href="manage_event_approval.php" class="<?= $currentPage == 'manage_event_approval.php' ? 'active-child' : '' ?>">Event Approvals</a>
+            </div>
+
+            <a href="javascript:void(0)" class="dropdown-btn 
                 <?= in_array($currentPage, ['manage_forum.php', 'manage_forum_report.php']) ? 'active' : '' ?>">Forum</a>
             <div class="dropdown-container" style="<?= in_array($currentPage, ['manage_forum.php', 'manage_forum_report.php']) ? 'display:block;' : '' ?>">
                 <a href="manage_forum.php" class="<?= $currentPage == 'manage_forum.php' ? 'active-child' : '' ?>">Manage Forum</a>

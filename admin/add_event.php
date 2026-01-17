@@ -9,8 +9,11 @@ if (!isset($_SESSION['userID']) || !in_array($_SESSION['role'], ['admin', 'organ
 }
 
 $userID = $_SESSION['userID'];
-// UPDATED: Check for success status in URL to display message after redirect
-$message = (isset($_GET['status']) && $_GET['status'] == 'success') ? "✅ Event added successfully!" : "";
+
+// UPDATED: Change success message to reflect the pending status
+$message = (isset($_GET['status']) && $_GET['status'] == 'success') 
+    ? "✅ Event submitted! It will be visible to the public once an Admin approves it." 
+    : "";
 $error = "";
 $countries = [];
 $categories = [];
@@ -50,9 +53,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $eventCountry     = trim($_POST['eventCountry']);
     $categoryID       = intval($_POST['categoryID']);
     $startDate        = $_POST['startDate'];
-    $startTime        = $_POST['startTime']; // NEW
+    $startTime        = $_POST['startTime']; 
     $endDate          = $_POST['endDate'];
-    $endTime          = $_POST['endTime'];   // NEW
+    $endTime          = $_POST['endTime'];   
     $deadline         = $_POST['deadline'];
     $maxParticipant   = intval($_POST['maxParticipant']);
     $point            = intval($_POST['point']);
@@ -111,11 +114,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
         if (!$isError) {
-            /* INSERT EVENT - Added startTime and endTime */
+            /* INSERT EVENT - Added status column set to 'pending' */
             $sql = "INSERT INTO event 
                     (eventName, coverImage, eventLocation, eventCountry, description,
-                     startDate, startTime, endDate, endTime, deadline, participantNum, maxParticipant, point, organizerID, categoryID)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)";
+                     startDate, startTime, endDate, endTime, deadline, participantNum, 
+                     maxParticipant, point, organizerID, categoryID, status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, 'pending')";
 
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
@@ -200,6 +204,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 .req { color: red; }
 label { font-weight: bold; margin-top: 12px; display: block; }
+.success { color: #155724; background-color: #d4edda; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #c3e6cb; }
+.error { color: #721c24; background-color: #f8d7da; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #f5c6cb; }
 
 input:not([type="submit"]):not([type="button"]), select, textarea {
     width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #bbb; margin-top: 5px; box-sizing: border-box; height: 44px;
@@ -232,8 +238,8 @@ button[type="submit"] { background: #333; }
 <div class="main-content">
     <div class="form-container">
         <h2>Add Event</h2>
-        <?= $message ? "<p class='success'>$message</p>" : "" ?>
-        <?= $error ? "<p class='error'>$error</p>" : "" ?>
+        <?= $message ? "<div class='success'>$message</div>" : "" ?>
+        <?= $error ? "<div class='error'>$error</div>" : "" ?>
 
         <form method="post" enctype="multipart/form-data">
             <label>Event Name <span class="req">*</span></label>
@@ -316,8 +322,6 @@ button[type="submit"] { background: #333; }
                 This allows participants to view review left by past participants.
                 If this is a brand-new event, you can safely skip this step.
             </p>
-
-
 
             <button type="button" onclick="openModal()" style="background:#6c5ce7;">Select Past Events</button>
             <input type="hidden" name="pastEvents[]" id="pastEventsHolder" value="<?= htmlspecialchars(implode(',', $_POST['pastEvents'] ?? [])) ?>">
