@@ -149,8 +149,8 @@ main { flex: 1; padding: 40px 20px; }
 
 .three-dots, .three-dots-horizontal { background: none; border: none; font-size: 20px; cursor: pointer; padding: 5px; }
 .dropdown { position: relative; display: inline-block; }
-.dropdown-content { display: none; position: absolute; right: 0; background: #fff; border: 1px solid #ccc; border-radius: 5px; min-width: 100px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10; }
-.dropdown-content button { width: 100%; padding: 8px 10px; border: none; background: none; text-align: left; cursor: pointer; }
+.dropdown-content { display: none; position: absolute; right: 0; background: #fff; border: 1px solid #ccc; border-radius: 5px; min-width: 120px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10; }
+.dropdown-content button { width: 100%; padding: 8px 10px; border: none; background: none; text-align: left; cursor: pointer; font-size: 14px;}
 .dropdown-content button:hover { background: #f5f5f5; color: red; }
 
 .edit-box { margin: 15px 0; width: 100%; }
@@ -176,6 +176,16 @@ main { flex: 1; padding: 40px 20px; }
 .comment-form textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; resize: none; box-sizing: border-box; }
 .comment-form button { align-self: flex-end; padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
 
+/* Modal Styles */
+.report-modal { display: none; position: fixed; z-index: 10001; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+.report-modal-content { background-color: #fff; margin: 15% auto; padding: 25px; border-radius: 10px; width: 350px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+.report-modal-content h3 { margin-top: 0; margin-bottom: 15px; color: #333; }
+.report-modal-content select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 20px; font-size: 14px; }
+.report-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.report-actions button { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+.btn-confirm-report { background: #dc3545; color: white; }
+.btn-cancel-report { background: #eee; color: #333; }
+
 .comment-text-container { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; transition: all 0.3s ease; }
 .comment-text-container.expanded { display: block; max-height: none; }
 .read-more-btn { color: #000; background: none; border: none; cursor: pointer; font-size: 13px; padding: 5px 0; font-weight: bold; display: none; }
@@ -184,6 +194,28 @@ main { flex: 1; padding: 40px 20px; }
 <body>
 <?php include("user_navbar.php"); ?>
 
+<div id="reportModal" class="report-modal">
+    <div class="report-modal-content">
+        <h3>🚩 Report Content</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Please select a reason for reporting this post.</p>
+        <form id="reportForm">
+            <input type="hidden" name="forumID" value="<?= $forumID ?>">
+            <select name="reason" id="reportReason" required>
+                <option value="">-- Select Reason --</option>
+                <option value="Spam">Spam</option>
+                <option value="Harassment">Harassment</option>
+                <option value="Inappropriate Content">Inappropriate Content</option>
+                <option value="Hate Speech">Hate Speech</option>
+                <option value="Other">Other</option>
+            </select>
+            <div class="report-actions">
+                <button type="button" class="btn-cancel-report" onclick="closeReportModal()">Cancel</button>
+                <button type="submit" class="btn-confirm-report">Submit Report</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <main>
     <div class="content-wrapper">
         <a href="community_forum.php" class="back-btn">← Back</a>
@@ -191,18 +223,20 @@ main { flex: 1; padding: 40px 20px; }
         <div class="container-box">
             <div class="forum-header">
                 <h2 class="forum-title"><?= htmlspecialchars($forum['title'] ?? '') ?></h2>
-                <?php if ($userID == $forum['userID']): ?>
-                    <div class="dropdown">
-                        <button class="three-dots">⋮</button>
-                        <div class="dropdown-content">
+                <div class="dropdown">
+                    <button class="three-dots">⋮</button>
+                    <div class="dropdown-content">
+                        <?php if ($userID == $forum['userID']): ?>
                             <button onclick="enableForumEdit()">Edit</button>
                             <form method="POST" onsubmit="return confirm('Delete this post?');">
                                 <input type="hidden" name="delete_forum" value="1">
                                 <button type="submit">Delete</button>
                             </form>
-                        </div>
+                        <?php else: ?>
+                            <button onclick="openReportModal()" style="color: #dc3545;">Report</button>
+                        <?php endif; ?>
                     </div>
-                <?php endif; ?>
+                </div>
             </div>
 
             <div class="forum-meta">
@@ -282,6 +316,49 @@ main { flex: 1; padding: 40px 20px; }
 </main>
 
 <script>
+// --- Report Feature Script ---
+function openReportModal() {
+    document.getElementById('reportModal').style.display = 'block';
+}
+
+function closeReportModal() {
+    document.getElementById('reportModal').style.display = 'none';
+}
+
+document.getElementById('reportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const forumID = <?= $forumID ?>;
+    const reason = document.getElementById('reportReason').value;
+
+    fetch("process_report.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `forumID=${forumID}&reason=${encodeURIComponent(reason)}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert("Report submitted successfully.");
+            closeReportModal();
+        } else {
+            alert(data.message || "Failed to submit report.");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Error submitting report.");
+    });
+});
+
+// Close modal if user clicks outside of it
+window.onclick = function(event) {
+    const modal = document.getElementById('reportModal');
+    if (event.target == modal) {
+        closeReportModal();
+    }
+}
+
+// --- Existing Scripts ---
 function initReadMore() {
     document.querySelectorAll('.comment-text-container').forEach(container => {
         const commentId = container.id.replace('comment-container-', '');
@@ -410,7 +487,6 @@ function saveEdit(commentID) {
             const textElement = commentDiv.querySelector(".comment-text");
             textElement.innerText = newText;
             
-            // Update the "Updated at" display
             const updateSpan = document.getElementById("updated-at-" + commentID);
             updateSpan.innerHTML = `<span class="updated-tag">(Updated: ${data.updatedAt})</span>`;
             

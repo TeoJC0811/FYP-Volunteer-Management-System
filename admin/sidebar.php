@@ -72,9 +72,10 @@ $userName = $_SESSION['userName'] ?? null;
             </div>
 
             <a href="javascript:void(0)" class="dropdown-btn 
-                <?= $currentPage == 'manage_forum.php' ? 'active' : '' ?>">Forum</a>
-            <div class="dropdown-container" style="<?= $currentPage == 'manage_forum.php' ? 'display:block;' : '' ?>">
+                <?= in_array($currentPage, ['manage_forum.php', 'manage_forum_report.php']) ? 'active' : '' ?>">Forum</a>
+            <div class="dropdown-container" style="<?= in_array($currentPage, ['manage_forum.php', 'manage_forum_report.php']) ? 'display:block;' : '' ?>">
                 <a href="manage_forum.php" class="<?= $currentPage == 'manage_forum.php' ? 'active-child' : '' ?>">Manage Forum</a>
+                <a href="manage_forum_report.php" class="<?= $currentPage == 'manage_forum_report.php' ? 'active-child' : '' ?>">Forum Reports</a>
             </div>
 
             <a href="javascript:void(0)" class="dropdown-btn 
@@ -133,21 +134,18 @@ $userName = $_SESSION['userName'] ?? null;
     background-color: #444;
 }
 
-/* Scrollable links */
 .sidebar-links {
     overflow-y: auto;
     flex: 1 1 auto;
     padding-right: 5px;
 }
 
-/* Dropdown styles */
 .dropdown-container {
     display: none;
     background-color: #444;
     padding-left: 15px;
 }
 
-/* Bottom section */
 .sidebar-bottom {
     flex-shrink: 0;
     padding: 10px 0 20px 0;
@@ -167,7 +165,6 @@ $userName = $_SESSION['userName'] ?? null;
     padding: 20px;
 }
 
-/* Active states */
 a.active {
     background-color: #555;
     font-weight: bold;
