@@ -2,20 +2,31 @@
 session_start();
 include("../db.php"); // Include DB for potential future stats
 
-// Only allow logged-in admins or organizers
-if (!isset($_SESSION['userID']) || !in_array($_SESSION['role'], ['admin', 'organizer'])) {
-    header("Location: login.php");
+/**
+ * 1. SESSION PROTECTION & PATH FIX
+ * We use the ?? operator to safely check for 'role'.
+ * We use ../login.php because this file is inside the /admin/ subfolder.
+ */
+$sessionRole = $_SESSION['role'] ?? null;
+
+if (!isset($_SESSION['userID']) || !in_array($sessionRole, ['admin', 'organizer'])) {
+    header("Location: ../login.php");
     exit();
 }
 
+/**
+ * 2. USER DATA PREPARATION
+ */
 // Safely get username
 $userName = isset($_SESSION['userName']) ? htmlspecialchars($_SESSION['userName']) : "User";
 
 // Get role (capitalize first letter for display)
-$userRole = isset($_SESSION['role']) ? ucfirst($_SESSION['role']) : "User";
-$isOrganizer = (strtolower($userRole) === 'organizer');
+$userRole = $sessionRole ? ucfirst($sessionRole) : "User";
+$isOrganizer = (strtolower($sessionRole) === 'organizer');
 
-// --- MOCK-UP DATA ---
+/**
+ * 3. MOCK-UP DATA
+ */
 $stats = [
     'events' => ['count' => 12, 'label' => 'Total Events', 'icon' => '📅', 'color' => '#3498db'],
     'courses' => ['count' => 5, 'label' => 'Total Courses', 'icon' => '📚', 'color' => '#2ecc71'],
@@ -26,7 +37,6 @@ if (!$isOrganizer) {
     $stats['total_users'] = ['count' => 150, 'label' => 'Registered Users', 'icon' => '👥', 'color' => '#9b59b6'];
     $stats['rewards'] = ['count' => 8, 'label' => 'Active Rewards', 'icon' => '🎁', 'color' => '#e74c3c'];
 }
-// --- END MOCK-UP DATA ---
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -45,7 +55,7 @@ if (!$isOrganizer) {
         }
         .dashboard-header h2 {
             margin-top: 0;
-            color: #2c3e50;
+            color: #2c3e3e;
             font-size: 1.8em;
         }
         .welcome {
@@ -61,7 +71,7 @@ if (!$isOrganizer) {
             margin-top: 20px;
         }
 
-        /* Stat Card - Changed to Div behavior (No hover effect, no pointer) */
+        /* Stat Card */
         .stat-card {
             background-color: #ffffff;
             padding: 20px;
@@ -70,7 +80,7 @@ if (!$isOrganizer) {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            cursor: default; /* Arrow cursor instead of hand pointer */
+            cursor: default; 
         }
 
         .stat-card .icon {

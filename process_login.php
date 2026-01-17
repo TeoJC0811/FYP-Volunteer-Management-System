@@ -92,13 +92,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['userID'] = $user['userID'];
             $_SESSION['userName'] = $user['userName'];
             $_SESSION['userRoles'] = $user['userRoles'];
+            $_SESSION['role'] = $user['userRoles']; // Added this line to fix the navbar and admin panel warnings
             
             /*
             |--------------------------------------------------------------
             | 4. REDIRECT LOGIC (QR Check-in or Normal Page)
             |--------------------------------------------------------------
-            | If redirect_after_login is set (from checkin.php), send them there.
-            | Otherwise, send them to the home page.
             */
             if (isset($_SESSION['redirect_after_login'])) {
                 $targetUrl = $_SESSION['redirect_after_login'];
