@@ -11,7 +11,7 @@ if (!isset($_SESSION['userID']) || !in_array($_SESSION['role'], ['admin', 'organ
 $userID = $_SESSION['userID'];
 // Check for success status in URL to display message after redirect
 $error = "";
-$message = (isset($_GET['status']) && $_GET['status'] == 'success') ? "✅ Training course added successfully!" : "";
+$message = (isset($_GET['status']) && $_GET['status'] == 'success') ? "✅ Training course submitted and is currently pending approval!" : "";
 
 /* ==========================
     FETCH COUNTRIES
@@ -50,8 +50,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $description    = trim($_POST['description'] ?? '');
     $courseLocation = trim($_POST['courseLocation'] ?? '');
     $courseCountry  = trim($_POST['courseCountry'] ?? '');
-    $startDate      = $_POST['startDate'] ?? ''; // Updated field
-    $endDate        = $_POST['endDate'] ?? '';   // New field
+    $startDate      = $_POST['startDate'] ?? ''; 
+    $endDate        = $_POST['endDate'] ?? '';   
     $startTime      = $_POST['startTime'] ?? '';
     $endTime        = $_POST['endTime'] ?? '';
     $deadline       = $_POST['deadline'] ?? ''; 
@@ -111,11 +111,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     move_uploaded_file($_FILES['coverImage']['tmp_name'], $uploadDir . $coverImageName);
                 }
 
+                // ✅ UPDATED SQL: Added 'status' column and set it to 'pending'
                 $sql = "INSERT INTO course
                     (courseName, coverImage, description, courseLocation, courseCountry,
                      startDate, endDate, startTime, endTime, deadline,
-                     participantNum, maxParticipant, fee, organizerID, categoryID)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)";
+                     participantNum, maxParticipant, fee, organizerID, categoryID, status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, 'pending')";
     
                 $stmt = $conn->prepare($sql);
                 $stmt->bind_param("ssssssssssidii", 
@@ -363,7 +364,6 @@ function searchPastCourses(term) {
     });
 }
 
-// Date Logic for StartDate, EndDate, and Deadline
 const startDateInput = document.getElementById('startDateInput');
 const endDateInput = document.getElementById('endDateInput');
 const deadlineInput = document.getElementById('deadlineInput');

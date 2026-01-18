@@ -33,8 +33,6 @@ $eventQuery = "
 $eventResult = $conn->query($eventQuery);
 
 // ✅ Fetch latest upcoming courses (ONLY APPROVED)
-// Note: Assuming 'course' table also has a 'status' column. 
-// If not, remove 'AND c.status = 'approved'' from the query below.
 $courseQuery = "
     SELECT 
         c.courseID, c.courseName, c.courseLocation, c.courseCountry, 
