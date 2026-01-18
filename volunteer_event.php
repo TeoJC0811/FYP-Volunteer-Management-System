@@ -188,13 +188,15 @@ html, body {
     border-radius:6px;
     margin-bottom:6px;
 }
+
+/* ✅ FIXED: Added grid-column span to center the no-event message */
 .no-event {
+    grid-column: 1 / -1; 
     text-align: center;
     width: 100%;
     font-size: 20px;
-    padding: 50px;
+    padding: 80px 20px;
     color: #666;
-    flex-grow: 1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -246,7 +248,6 @@ html, body {
 
     <div class="event-container">
     <?php
-        // UPDATED SQL: Added 'status = approved' to filter out pending/rejected events
         $sql = "
             SELECT 
                 e.*,

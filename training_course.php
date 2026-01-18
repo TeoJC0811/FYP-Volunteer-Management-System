@@ -94,7 +94,21 @@ html, body { height: 100%; margin: 0; display: flex; flex-direction: column; }
 .meta-chip .emoji { display: inline-block; width: 22px; text-align: center; }
 .event-desc { font-size: 14px; color: #666; line-height: 1.5em; text-align: left; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; min-height: 4.5em; margin-bottom: 10px; }
 .interest-tag { display:inline-block; background:#ffefc2; color:#b37400; font-size:13px; font-weight:600; padding:4px 8px; border-radius:6px; margin-bottom:6px; }
-.no-event { text-align: center; width: 100%; font-size: 20px; padding: 50px; color: #666; flex-grow: 1; display: flex; justify-content: center; align-items: center; }
+
+/* ✅ FIXED: Added grid-column span to center empty state */
+.no-event { 
+    grid-column: 1 / -1; 
+    text-align: center; 
+    width: 100%; 
+    font-size: 20px; 
+    padding: 80px 20px; 
+    color: #666; 
+    display: flex; 
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center; 
+}
+
 .join-button { display: block; text-align: center; padding: 10px; background: #007BFF; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px; }
 </style>
 
@@ -149,7 +163,7 @@ html, body { height: 100%; margin: 0; display: flex; flex-direction: column; }
             LEFT JOIN usercategory uc 
                 ON uc.categoryID = c.categoryID 
                 AND uc.userID = " . intval($userID) . "
-            WHERE c.endDate >= CURDATE()
+            WHERE c.endDate >= CURDATE() AND c.status = 'approved'
         ";
 
         if (!empty($search)) {
@@ -238,7 +252,7 @@ html, body { height: 100%; margin: 0; display: flex; flex-direction: column; }
 
     <?php endwhile;
         else:
-            echo "<div class='no-event'>No courses found matching your criteria.</div>";
+            echo "<div class='no-event'>No upcoming courses available.</div>";
         endif;
         $conn->close();
     ?>

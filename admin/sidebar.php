@@ -72,9 +72,10 @@ $userName = $_SESSION['userName'] ?? null;
             </div>
 
             <a href="javascript:void(0)" class="dropdown-btn 
-                <?= in_array($currentPage, ['manage_event_approval.php']) ? 'active' : '' ?>">Approvals</a>
-            <div class="dropdown-container" style="<?= in_array($currentPage, ['manage_event_approval.php']) ? 'display:block;' : '' ?>">
+                <?= in_array($currentPage, ['manage_event_approval.php', 'manage_training_approval.php']) ? 'active' : '' ?>">Approvals</a>
+            <div class="dropdown-container" style="<?= in_array($currentPage, ['manage_event_approval.php', 'manage_training_approval.php']) ? 'display:block;' : '' ?>">
                 <a href="manage_event_approval.php" class="<?= $currentPage == 'manage_event_approval.php' ? 'active-child' : '' ?>">Event Approvals</a>
+                <a href="manage_training_approval.php" class="<?= $currentPage == 'manage_training_approval.php' ? 'active-child' : '' ?>">Training Approvals</a>
             </div>
 
             <a href="javascript:void(0)" class="dropdown-btn 
@@ -115,73 +116,18 @@ $userName = $_SESSION['userName'] ?? null;
 </div>
 
 <style>
-/* --- NO CHANGES TO YOUR ORIGINAL STYLES --- */
-.sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 220px;
-    height: 100vh;
-    background-color: #333;
-    color: #fff;
-    padding-top: 20px;
-    display: flex;
-    flex-direction: column;
-}
-
-.sidebar a {
-    padding: 10px 15px;
-    text-decoration: none;
-    color: #fff;
-    display: block;
-}
-
-.sidebar a:hover {
-    background-color: #444;
-}
-
-.sidebar-links {
-    overflow-y: auto;
-    flex: 1 1 auto;
-    padding-right: 5px;
-}
-
-.dropdown-container {
-    display: none;
-    background-color: #444;
-    padding-left: 15px;
-}
-
-.sidebar-bottom {
-    flex-shrink: 0;
-    padding: 10px 0 20px 0;
-    text-align: center;
-}
-
-.sidebar-user {
-    margin: 0 8px 10px 8px;
-    padding: 10px;
-    background-color: #2e3b4e;
-    border-radius: 10px;
-    text-align: center;
-}
-
-.main-content {
-    margin-left: 220px;
-    padding: 20px;
-}
-
-a.active {
-    background-color: #555;
-    font-weight: bold;
-}
-a.active-child {
-    font-weight: bold;
-}
-
-.logout {
-    color: #ff4d4d !important;
-}
+/* ... Styles remain unchanged ... */
+.sidebar { position: fixed; top: 0; left: 0; width: 220px; height: 100vh; background-color: #333; color: #fff; padding-top: 20px; display: flex; flex-direction: column; }
+.sidebar a { padding: 10px 15px; text-decoration: none; color: #fff; display: block; }
+.sidebar a:hover { background-color: #444; }
+.sidebar-links { overflow-y: auto; flex: 1 1 auto; padding-right: 5px; }
+.dropdown-container { display: none; background-color: #444; padding-left: 15px; }
+.sidebar-bottom { flex-shrink: 0; padding: 10px 0 20px 0; text-align: center; }
+.sidebar-user { margin: 0 8px 10px 8px; padding: 10px; background-color: #2e3b4e; border-radius: 10px; text-align: center; }
+.main-content { margin-left: 220px; padding: 20px; }
+a.active { background-color: #555; font-weight: bold; }
+a.active-child { font-weight: bold; }
+.logout { color: #ff4d4d !important; }
 </style>
 
 <script>
