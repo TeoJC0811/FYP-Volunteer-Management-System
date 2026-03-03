@@ -24,11 +24,11 @@ $hostName = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $isLocal = in_array($hostName, ['localhost', '127.0.0.1']);
 
 // PULL FROM ENVIRONMENT (Local .env or Render Dashboard)
-$host = getenv('DB_HOST');
-$port = getenv('DB_PORT');
-$user = getenv('DB_USER');
-$pass = getenv('DB_PASS');
-$db   = getenv('DB_NAME');
+$host = "159.203.185.228"; // Forced IP
+$port = 10553;
+$user = "avnadmin";
+$pass = "AVNS_r0S8JDyWQULHCVz98dY";
+$db   = "defaultdb";
 
 // Fallback for Localhost XAMPP if .env is missing or you want local MySQL
 if ($isLocal && !$host) {
