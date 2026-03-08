@@ -117,7 +117,7 @@ $courseResult = $conn->query($courseQuery);
             width:220px; box-shadow:0 4px 10px rgba(0,0,0,0.05); transition:all 0.3s ease;
             text-decoration:none; color:#222; border: 1px solid #eee;
         }
-        .category-box:hover { transform:translateY(-8px); box-shadow:0 10px 20px rgba(0,0,0,0.1); border-color: #2575fc; }
+        .category-box:hover { transform:translateY(-8px); box-shadow:0 10px 20px rgba(0,0,0,0.1); border-color: #000000; }
         .category-box i { font-size:40px; color:#2575fc; margin-bottom:12px; }
         .category-box h3 { font-size:1.1rem; font-weight:bold; }
 
