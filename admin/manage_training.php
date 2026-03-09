@@ -240,7 +240,13 @@ $todayDT = new DateTime($todayStr);
 
                 if ($curr >= $max && $sText != 'Past') { $sClass = 'status-full'; $sText = 'Full'; }
                 
-                $img = !empty($row['coverImage']) ? '../uploads/course_cover/' . $row['coverImage'] : '../images/default.jpg';
+                $dbImg = $row['coverImage'] ?? '';
+// Smart Check: Detect if it's a Cloudinary URL or a local filename
+if (empty($dbImg)) {
+    $img = '../images/default.jpg';
+} else {
+    $img = (strpos($dbImg, 'http') === 0) ? $dbImg : '../uploads/course_cover/' . $dbImg;
+}
                 
                 // FIX: Fallback for strtotime null values
                 $timeRange = (!empty($row['startTime']) && !empty($row['endTime'])) 

@@ -188,56 +188,73 @@ $sort = $_GET['sort'] ?? '';
     </div>
 
     <div class="reward-container">
-    <?php
-        $sql = "SELECT * FROM reward WHERE 1=1";
+<?php
+    // --- 1. RE-ESTABLISH THE SQL QUERY LOGIC ---
+    $sql = "SELECT * FROM reward WHERE 1=1";
 
-        if (!empty($search)) {
-            $s = $conn->real_escape_string($search);
-            $sql .= " AND rewardName LIKE '%$s%'";
-        }
+    if (!empty($search)) {
+        $s = $conn->real_escape_string($search);
+        $sql .= " AND rewardName LIKE '%$s%'";
+    }
 
-        if ($filter === "claimable") {
-            $sql .= " AND pointRequired <= $totalPoints";
-        } else if ($filter === "not_claimable") {
-            $sql .= " AND pointRequired > $totalPoints";
-        }
+    if ($filter === "claimable") {
+        $sql .= " AND pointRequired <= $totalPoints";
+    } else if ($filter === "not_claimable") {
+        $sql .= " AND pointRequired > $totalPoints";
+    }
 
-        if ($sort === "low_high") {
-            $sql .= " ORDER BY pointRequired ASC";
-        } else if ($sort === "high_low") {
-            $sql .= " ORDER BY pointRequired DESC";
-        } else if ($sort === "az") {
-            $sql .= " ORDER BY rewardName ASC";
-        } else if ($sort === "za") {
-            $sql .= " ORDER BY rewardName DESC";
-        }
+    // Sorting logic
+    if ($sort === "low_high") {
+        $sql .= " ORDER BY pointRequired ASC";
+    } else if ($sort === "high_low") {
+        $sql .= " ORDER BY pointRequired DESC";
+    } else if ($sort === "az") {
+        $sql .= " ORDER BY rewardName ASC";
+    } else if ($sort === "za") {
+        $sql .= " ORDER BY rewardName DESC";
+    }
 
-        $result = $conn->query($sql);
+    $result = $conn->query($sql);
 
-        if ($result->num_rows > 0):
-            while ($row = $result->fetch_assoc()):
-                $imagePath = !empty($row['rewardImage'])
-                    ? 'uploads/rewards/' . basename($row['rewardImage'])
-                    : 'https://via.placeholder.com/200x150';
-    ?>
-        <div class="reward-card">
-            <div class="reward-image" style="background-image: url('<?= htmlspecialchars($imagePath) ?>');"></div>
-            <div class="reward-info">
-                <h3><?= htmlspecialchars($row['rewardName']) ?></h3>
-                <p><?= htmlspecialchars($row['description']) ?></p>
-                <p>🎯 <?= htmlspecialchars($row['pointRequired']) ?> Points Required</p>
+    // --- 2. THE DISPLAY LOOP (Now works with $sql restored) ---
+    if ($result && $result->num_rows > 0):
+        while ($row = $result->fetch_assoc()):
+            $dbImage = $row['rewardImage'] ?? '';
+            $imagePath = 'https://via.placeholder.com/200x150';
+
+            if (!empty($dbImage)) {
+                if (strpos($dbImage, 'http') === 0) {
+                    $imagePath = $dbImage;
+                } else {
+                    $imagePath = 'uploads/rewards/' . basename($dbImage);
+                }
+            }
+
+            $canAfford = ($totalPoints >= $row['pointRequired']);
+?>
+    <div class="reward-card">
+        <div class="reward-image" style="background-image: url('<?= htmlspecialchars($imagePath) ?>');"></div>
+        <div class="reward-info">
+            <h3><?= htmlspecialchars($row['rewardName']) ?></h3>
+            <p><?= htmlspecialchars($row['description']) ?></p>
+            <p>🎯 <?= htmlspecialchars($row['pointRequired']) ?> Points Required</p>
+            
+            <?php if ($canAfford): ?>
                 <a href="reward_claim.php?id=<?= $row['rewardID'] ?>" class="claim-button">Claim</a>
-            </div>
+            <?php else: ?>
+                <button class="claim-button" style="background: #ccc; cursor: not-allowed;" disabled>Insufficient Points</button>
+            <?php endif; ?>
         </div>
-    <?php
-            endwhile;
-        else:
-            echo "<p>No rewards found.</p>";
-        endif;
-
-        $conn->close();
-    ?>
     </div>
+<?php
+        endwhile;
+    else:
+        echo "<div class='no-event' style='grid-column: 1/-1; text-align: center;'><p>No rewards found.</p></div>";
+    endif;
+
+    $conn->close();
+?>
+</div>
 </div>
 
 <?php include 'includes/footer.php'; ?>

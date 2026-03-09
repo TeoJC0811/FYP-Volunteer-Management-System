@@ -42,9 +42,16 @@ if (!$reward) {
     exit();
 }
 
-$imagePath = !empty($reward['rewardImage'])
-    ? 'uploads/rewards/' . basename($reward['rewardImage'])
-    : 'https://via.placeholder.com/200x150';
+$dbImage = $reward['rewardImage'] ?? '';
+$imagePath = 'https://via.placeholder.com/200x150'; // Default
+
+if (!empty($dbImage)) {
+    if (strpos($dbImage, 'http') === 0) {
+        $imagePath = $dbImage;
+    } else {
+        $imagePath = 'uploads/rewards/' . basename($dbImage);
+    }
+}
 
 $canClaim = $totalPoints >= $reward['pointRequired'];
 ?>

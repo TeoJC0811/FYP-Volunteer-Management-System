@@ -249,9 +249,19 @@ main { flex: 1; padding: 40px 20px; }
                 <?php endwhile; ?>
             </div>
 
-            <?php if (!empty($forum['forumImage'])): ?>
-                <img src="<?= htmlspecialchars($forum['forumImage']) ?>" class="forum-image-display" alt="Forum Image">
-            <?php endif; ?>
+            <?php if (!empty($forum['forumImage'])): 
+    $fImage = $forum['forumImage'];
+    // Check if it's already a Cloudinary link (starts with http)
+    if (strpos($fImage, 'http') === 0) {
+        $fImagePath = $fImage;
+    } else {
+        // It's an old local file from your uploads/forum/ folder
+        // Note: Make sure the folder name matches your directory exactly
+        $fImagePath = "uploads/forum/" . basename($fImage);
+    }
+?>
+    <img src="<?= htmlspecialchars($fImagePath) ?>" class="forum-image-display" alt="Forum Image">
+<?php endif; ?>
 
             <div class="forum-content" id="forum-content"><?= nl2br(htmlspecialchars($forum['content'] ?? '')) ?></div>
 

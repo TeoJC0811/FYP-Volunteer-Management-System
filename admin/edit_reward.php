@@ -46,16 +46,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $imagePath = $reward['rewardImage'];
 
     if (!empty($_FILES['rewardImage']['name'])) {
-        $targetDir = "../uploads/rewards/";
-        if (!is_dir($targetDir)) {
-            mkdir($targetDir, 0777, true);
-        }
-        $fileName = time() . "_" . basename($_FILES["rewardImage"]["name"]);
-        $targetFile = $targetDir . $fileName;
-
-        if (move_uploaded_file($_FILES["rewardImage"]["tmp_name"], $targetFile)) {
-            $imagePath = "uploads/rewards/" . $fileName;
-        } else {
+        try {
+            // Upload to Cloudinary
+            $upload = (new UploadApi())->upload($_FILES['rewardImage']['tmp_name'], [
+                'folder' => 'rewards'
+            ]);
+            $imagePath = $upload['secure_url']; // Store the full URL
+        } catch (Exception $e) {
             header("Location: manage_reward.php?error=UploadFailed");
             exit();
         }
@@ -195,7 +192,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             <label>Current Reward Image</label>
             <?php if (!empty($reward['rewardImage'])): ?>
-                <img id="preview" src="../<?= htmlspecialchars($reward['rewardImage']) ?>" alt="Reward" class="preview-img">
+                <?php 
+    $dbImg = $reward['rewardImage'] ?? '';
+    $displayImg = (strpos($dbImg, 'http') === 0) ? $dbImg : "../" . $dbImg;
+?>
+<img id="preview" src="<?= htmlspecialchars($displayImg) ?>" alt="Reward" class="preview-img">
             <?php else: ?>
                 <img id="preview" class="preview-img" style="display:none;">
             <?php endif; ?>

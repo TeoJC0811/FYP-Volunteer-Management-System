@@ -157,14 +157,15 @@ $result = $stmt->get_result();
                         <h3 class="forum-title"><?= htmlspecialchars($row['title'] ?? '') ?></h3> 
                         
                         <?php 
-                        $imgPath = $row['forumImage'] ?? '';
-                        $content = $row['content'] ?? '';
+$dbImg = $row['forumImage'] ?? '';
+// Smart Check: Use URL if it starts with http, otherwise add the forum_images path
+$displayImg = (strpos($dbImg, 'http') === 0) ? $dbImg : 'uploads/forum_images/' . basename($dbImg);
 
-                        if (!empty($imgPath)): ?>
-                            <img src="<?= htmlspecialchars($imgPath) ?>" class="forum-img-preview" alt="Forum Image">
-                        <?php elseif (!empty(trim($content))): ?>
-                            <p class="post-excerpt"><?= nl2br(htmlspecialchars(substr($content, 0, 150))) ?>...</p> 
-                        <?php endif; ?>
+if (!empty($dbImg)): ?>
+    <img src="<?= htmlspecialchars($displayImg) ?>" class="forum-img-preview" alt="Forum Image">
+<?php elseif (!empty(trim($content))): ?>
+    <p class="post-excerpt"><?= nl2br(htmlspecialchars(substr($content, 0, 150))) ?>...</p> 
+<?php endif; ?>
 
                         <div class="forum-meta"> 
                             Posted by <strong><?= htmlspecialchars($row['userName'] ?? '') ?></strong> on <?= date('d M Y', strtotime($row['createdDate'])) ?> 
@@ -211,19 +212,18 @@ function castVote(event, forumID, value, btn) {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            countEl.innerText = data.totalVotes;
-            const upBtn = card.querySelector('.vote-btn.upvote');
-            const downBtn = card.querySelector('.vote-btn.downvote');
-            if (value === 1) {
-                upBtn.classList.toggle('active');
-                downBtn.classList.remove('active');
-            } else {
-                downBtn.classList.toggle('active');
-                upBtn.classList.remove('active');
-            }
-        } else {
-            alert(data.message || "Failed to vote.");
-        }
+    countEl.innerText = data.totalVotes;
+    const upBtn = card.querySelector('.vote-btn.upvote');
+    const downBtn = card.querySelector('.vote-btn.downvote');
+
+    // Remove active from both first
+    upBtn.classList.remove('active');
+    downBtn.classList.remove('active');
+
+    // data.userVote should be returned by your vote_forum.php (1, -1, or 0)
+    if (data.userAction === 1) upBtn.classList.add('active');
+    if (data.userAction === -1) downBtn.classList.add('active');
+}
     })
     .catch(err => console.error("Error:", err));
 }

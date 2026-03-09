@@ -176,7 +176,9 @@ if (!empty($sDate) && !empty($eDate)) {
     $dateDisplay = !empty($sDate) ? date('d M Y', strtotime($sDate)) : 'Not set';
 }
 
-$imagePath = !empty($course['coverImage']) ? 'uploads/course_cover/' . htmlspecialchars($course['coverImage']) : 'https://via.placeholder.com/600x350';
+$dbCover = $course['coverImage'] ?? '';
+$imagePath = (strpos($dbCover, 'http') === 0) ? $dbCover : 'uploads/course_cover/' . basename($dbCover);
+if (empty($dbCover)) $imagePath = 'https://via.placeholder.com/600x350';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -314,28 +316,34 @@ $imagePath = !empty($course['coverImage']) ? 'uploads/course_cover/' . htmlspeci
             <h4>Photo Gallery</h4>
             <?php if (!empty($galleryImages)): ?>
             <div class="gallery-grid">
-                <?php foreach ($galleryImages as $i => $photo): ?>
-                    <?php if ($i < 3): ?>
-                        <div class="photo-box">
-                            <img src="<?= htmlspecialchars($photo['imageUrl']) ?>" alt="" data-index="<?= $i ?>">
-                        </div>
-                    <?php elseif ($i === 3): ?>
-                        <div class="photo-box" data-index="<?= $i ?>">
-                            <img src="<?= htmlspecialchars($photo['imageUrl']) ?>" alt="">
-                            <div class="overlay">
-                                <i class="fa-solid fa-magnifying-glass-plus"></i>
-                                View All <?= count($galleryImages) ?> Photos
-                            </div>
-                        </div>
-                        <?php break; ?>
-                    <?php endif; ?>
-                <?php endforeach; ?>
+                <?php foreach ($galleryImages as $i => $photo): 
+    $dbGal = $photo['imageUrl'] ?? '';
+    $finalGal = (strpos($dbGal, 'http') === 0) ? $dbGal : 'uploads/gallery/' . basename($dbGal);
+?>
+    <?php if ($i < 3): ?>
+        <div class="photo-box">
+            <img src="<?= htmlspecialchars($finalGal) ?>" alt="" data-index="<?= $i ?>">
+        </div>
+    <?php elseif ($i === 3): ?>
+        <div class="photo-box" data-index="<?= $i ?>">
+            <img src="<?= htmlspecialchars($finalGal) ?>" alt="">
+            <div class="overlay">
+                <i class="fa-solid fa-magnifying-glass-plus"></i>
+                View All <?= count($galleryImages) ?> Photos
             </div>
-            <div id="hiddenGallery" style="display:none;">
-                <?php foreach ($galleryImages as $photo): ?>
-                    <img src="<?= htmlspecialchars($photo['imageUrl']) ?>" alt="">
-                <?php endforeach; ?>
-            </div>
+        </div>
+        <?php break; ?>
+    <?php endif; ?>
+<?php endforeach; ?>
+
+<div id="hiddenGallery" style="display:none;">
+    <?php foreach ($galleryImages as $photo): 
+        $dbGal = $photo['imageUrl'] ?? '';
+        $finalGal = (strpos($dbGal, 'http') === 0) ? $dbGal : 'uploads/gallery/' . basename($dbGal);
+    ?>
+        <img src="<?= htmlspecialchars($finalGal) ?>" alt="">
+    <?php endforeach; ?>
+</div>
             <?php else: ?>
                 <p>No gallery images available.</p>
             <?php endif; ?>
@@ -343,7 +351,7 @@ $imagePath = !empty($course['coverImage']) ? 'uploads/course_cover/' . htmlspeci
 
         <div class="event-map">
             <h4>Course Location</h4>
-            <iframe src="https://www.google.com/maps?q=<?= urlencode(($course['courseLocation'] ?? '') . ', ' . ($course['courseCountry'] ?? '')) ?>&output=embed" width="100%" height="300" style="border:0;" allowfullscreen loading="lazy"></iframe>
+            <iframe src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=<?= urlencode(($course['courseLocation'] ?? '') . ', ' . ($course['courseCountry'] ?? '')) ?>" width="100%" height="300" style="border:0;" allowfullscreen loading="lazy"></iframe>
         </div>
     </div>
 
@@ -390,7 +398,9 @@ $imagePath = !empty($course['coverImage']) ? 'uploads/course_cover/' . htmlspeci
         <h3>Related Past Courses</h3>
         <div class="past-event-list">
             <?php foreach ($pastCourses as $past): 
-                $pastImg = !empty($past['coverImage']) ? 'uploads/course_cover/' . $past['coverImage'] : 'https://via.placeholder.com/150x100';
+                $dbPast = $past['coverImage'] ?? '';
+                $pastImg = (strpos($dbPast, 'http') === 0) ? $dbPast : 'uploads/course_cover/' . basename($dbPast);
+                if (empty($dbPast)) $pastImg = 'https://via.placeholder.com/150x100';
             ?>
                 <a href="course_detail.php?id=<?= $past['courseID'] ?>" class="past-event-card">
                     <img src="<?= htmlspecialchars($pastImg) ?>" alt="Past Course">

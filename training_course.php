@@ -188,11 +188,13 @@ html, body { height: 100%; margin: 0; display: flex; flex-direction: column; }
                 $imagePath = "https://via.placeholder.com/300x180";
 
                 if (!empty($cover)) {
-                    $cover = str_replace("\\", "/", $cover);
-                    if (strpos($cover, "uploads/") !== false) {
-                        $imagePath = $cover; 
+                    // 1. If it starts with http, it's a Cloudinary link - use it directly
+                    if (strpos($cover, 'http') === 0) {
+                        $imagePath = $cover;
                     } else {
-                        $imagePath = "uploads/course_cover/" . basename($cover);
+                        // 2. Otherwise, it's an old local file - clean path and add folder prefix
+                        $cleanCover = str_replace("\\", "/", $cover);
+                        $imagePath = "uploads/course_cover/" . basename($cleanCover);
                     }
                 }
 

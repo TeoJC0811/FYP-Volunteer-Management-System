@@ -32,7 +32,7 @@ if ($isEvent) {
 } else {
     $regID = intval($_GET['courseRegisterID']);
     $stmt = $conn->prepare("
-        SELECT c.courseName AS title, c.courseDate AS endDate, cr.userID
+        SELECT c.courseName AS title, c.endDate AS endDate, cr.userID
         FROM courseregistration cr
         JOIN course c ON cr.courseID = c.courseID
         WHERE cr.courseRegisterID = ?
@@ -69,7 +69,7 @@ if (!$stmt->fetch()) {
 $stmt->close();
 
 // Generate PDF
-$pdf = new FPDI();
+$pdf = new Fpdi();
 $pdf->AddPage('L');
 $pdf->setSourceFile($templatePath);
 $tplIdx = $pdf->importPage(1);

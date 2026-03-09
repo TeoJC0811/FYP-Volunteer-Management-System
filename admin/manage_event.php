@@ -352,7 +352,13 @@ $todayDT = new DateTime();
                 else { $sClass = 'status-upcoming'; $sText = 'Upcoming'; }
 
                 if ($curr >= $max && $sText != 'Past') { $sClass = 'status-full'; $sText = 'Full'; }
-                $img = !empty($row['coverImage']) ? '../uploads/event_cover/' . $row['coverImage'] : '../images/default.jpg';
+                $dbImg = $row['coverImage'] ?? '';
+// Smart Check: Detect if it's a Cloudinary URL or a local filename
+if (empty($dbImg)) {
+    $img = '../images/default.jpg';
+} else {
+    $img = (strpos($dbImg, 'http') === 0) ? $dbImg : '../uploads/event_cover/' . $dbImg;
+}
             ?>
             <div class="event-card">
                 <div class="card-image" style="background-image: url('<?= htmlspecialchars($img) ?>');">

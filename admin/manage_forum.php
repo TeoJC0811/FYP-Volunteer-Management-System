@@ -20,10 +20,13 @@ if (isset($_GET['delete'])) {
     $imgRes = $imgStmt->get_result();
     if ($imgRow = $imgRes->fetch_assoc()) {
         $dbImagePath = $imgRow['forumImage'] ?? '';
-        $filePath = (strpos($dbImagePath, 'uploads/') === 0) ? "../" . $dbImagePath : "../uploads/forum_images/" . $dbImagePath;
-        if (!empty($dbImagePath) && file_exists($filePath)) {
-            unlink($filePath); 
-        }
+        // Only delete from local disk if it's NOT a cloud URL
+if (!empty($dbImagePath) && strpos($dbImagePath, 'http') !== 0) {
+    $filePath = (strpos($dbImagePath, 'uploads/') === 0) ? "../" . $dbImagePath : "../uploads/forum_images/" . $dbImagePath;
+    if (file_exists($filePath)) {
+        unlink($filePath); 
+    }
+}
     }
     $imgStmt->close();
 
@@ -145,12 +148,20 @@ if (!empty($search)) {
                 $content = $row['content'] ?? '';
                 $dbImg = $row['forumImage'] ?? '';
                 
-                if (!empty($dbImg)) {
-                    $imagePath = (strpos($dbImg, 'uploads/') === 0) ? "../" . $dbImg : "../uploads/forum_images/" . $dbImg;
-                    $hasValidImage = file_exists($imagePath);
-                } else {
-                    $hasValidImage = false;
-                }
+                $imagePath = '';
+$hasValidImage = false;
+
+if (!empty($dbImg)) {
+    if (strpos($dbImg, 'http') === 0) {
+        // It's a Cloudinary URL
+        $imagePath = $dbImg;
+        $hasValidImage = true;
+    } else {
+        // It's a local file
+        $imagePath = (strpos($dbImg, 'uploads/') === 0) ? "../" . $dbImg : "../uploads/forum_images/" . $dbImg;
+        $hasValidImage = file_exists($imagePath);
+    }
+}
             ?>
             <div class="forum-card">
                 <div class="forum-img-box">

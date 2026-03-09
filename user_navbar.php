@@ -60,7 +60,7 @@ if ($userID) {
     <div class="nav-left">
         <div class="nav-logo">
             <a href="index.php">
-                <img src="uploads/ServeTogetherIcon1.png" alt="ServeTogether Logo" style="height:40px;">
+                <img src="https://your-cloudinary-url-com/ServeTogetherIcon1.png" alt="ServeTogether Logo" style="height:40px;">
             </a>
         </div>
         <div class="nav-links">
@@ -77,7 +77,7 @@ if ($userID) {
                 <a href="notification.php" class="noti-bell" id="notiBell" onclick="hideRedDot()">
                     <i class="fa-solid fa-bell"></i>
                     <?php if ($unreadCount > 0): ?>
-                        <span class="noti-dot" id="notiDot"></span>
+                        <span class="noti-dot" id="notiDot"><?= $unreadCount ?></span>
                     <?php endif; ?>
                 </a>
 
@@ -153,8 +153,22 @@ nav a, .profile-menu a { text-decoration: none !important; color: #333 !importan
 .nav-links a, .profile-toggle, .noti-bell { padding: 8px 12px; }
 .profile-toggle i { margin-right: 10px; }
 .noti-bell { position: relative; font-size: 20px; }
-.noti-dot { position: absolute; top: 6px; right: 8px; height: 10px; width: 10px; background-color: #ff4d4d; border-radius: 50%; border: 2px solid white; }
-
+.noti-dot { 
+    position: absolute; 
+    top: -2px; 
+    right: -2px; 
+    height: 18px; 
+    width: 18px; 
+    background-color: #ff4d4d; 
+    border-radius: 50%; 
+    border: 2px solid white; 
+    color: white; 
+    font-size: 10px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-weight: bold;
+}
 .profile-menu { position: absolute; right: 20px; top: 58px; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 9999; width: 185px; overflow: hidden; }
 .profile-menu a { display: block; padding: 12px 15px; font-size: 14px; }
 
@@ -227,7 +241,7 @@ function updateBellDot(count) {
 }
 
 if (<?= $userID ? 'true' : 'false' ?>) {
-    setInterval(fetchNewNotifications, 5000); 
+    setInterval(fetchNewNotifications, 10000); 
 }
 
 function toggleProfileMenu(e) {

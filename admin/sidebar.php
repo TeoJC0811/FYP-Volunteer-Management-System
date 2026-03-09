@@ -9,10 +9,20 @@ $userName = $_SESSION['userName'] ?? null;
 
 <div class="sidebar">
 
-    <a href="index.php">
-        <img src="../uploads/ServeTogetherIcon1.png"
-            alt="ServeTogether Logo" style="height:40px; margin-bottom:15px; padding-left: 15px;">
-    </a>
+  <?php 
+    // Usually the logo is static, but if you want it to be dynamic:
+    $logoPath = "../uploads/ServeTogetherIcon1.png"; 
+    
+    // If you decide to host the logo on Cloudinary later, 
+    // this check keeps it from breaking:
+    $displayLogo = (strpos($logoPath, 'http') === 0) ? $logoPath : $logoPath;
+?>
+
+<a href="index.php">
+    <img src="<?= htmlspecialchars($displayLogo) ?>" 
+         alt="ServeTogether Logo" 
+         style="height:40px; margin-bottom:15px; padding-left: 15px;">
+</a>
 
     <div class="sidebar-links">
         <a href="../index.php" style="color: #ffd700; font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 15px; margin-bottom: 10px;">

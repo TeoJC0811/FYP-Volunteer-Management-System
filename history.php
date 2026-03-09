@@ -197,8 +197,13 @@ $trainingHistory = $stmt2->get_result();
             <?php while ($row = $eventHistory->fetch_assoc()): ?>
                 <div class="history-card">
                     <div class="img-wrapper">
-                        <img src="uploads/event_cover/<?= htmlspecialchars($row['coverImage'] ?? '') ?>" alt="Cover" class="card-img" onerror="this.src='images/default.jpg';">
-                    </div>
+    <?php 
+        $dbImg = $row['coverImage'] ?? '';
+        // If it's a URL (cloud), use it. If not, add the local path.
+        $eventImg = (strpos($dbImg, 'http') === 0) ? $dbImg : 'uploads/event_cover/' . basename($dbImg);
+    ?>
+    <img src="<?= htmlspecialchars($eventImg) ?>" alt="Cover" class="card-img" onerror="this.src='images/default.jpg';">
+</div>
                     
                     <div class="card-content">
                         <div class="card-title"><?= htmlspecialchars($row['activityName']) ?></div>
@@ -237,8 +242,13 @@ $trainingHistory = $stmt2->get_result();
             <?php if ($trainingHistory->num_rows > 0): ?>
             <?php while ($row = $trainingHistory->fetch_assoc()): ?>
                 <div class="history-card">
-                    <div class="img-wrapper">
-                        <img src="uploads/course_cover/<?= htmlspecialchars($row['coverImage'] ?? '') ?>" alt="Cover" class="card-img" onerror="this.src='images/default.jpg';">
+                   <div class="img-wrapper">
+                        <?php 
+                            $dbImg = $row['coverImage'] ?? '';
+                            // Smart Check: Use cloud URL if it exists, otherwise use local path
+                            $courseImg = (strpos($dbImg, 'http') === 0) ? $dbImg : 'uploads/course_cover/' . basename($dbImg);
+                        ?>
+                        <img src="<?= htmlspecialchars($courseImg) ?>" alt="Cover" class="card-img" onerror="this.src='images/default.jpg';">
                     </div>
                     
                     <div class="card-content">

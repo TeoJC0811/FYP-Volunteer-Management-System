@@ -114,8 +114,14 @@ $result = $conn->query($sql);
         <div class="approval-grid">
             <?php if ($result && $result->num_rows > 0): ?>
                 <?php while($row = $result->fetch_assoc()): 
-                    $coverImg = !empty($row['coverImage']) ? '../uploads/course_cover/'.$row['coverImage'] : 'https://via.placeholder.com/400x120';
-                ?>
+    $dbImg = $row['coverImage'] ?? '';
+    // Smart Check: Detect if it's a Cloudinary URL or a local filename
+    if (empty($dbImg)) {
+        $coverImg = 'https://via.placeholder.com/400x120';
+    } else {
+        $coverImg = (strpos($dbImg, 'http') === 0) ? $dbImg : '../uploads/course_cover/' . $dbImg;
+    }
+?>
                 <div class="event-card">
                     <div class="card-banner" style="background-image: url('<?= htmlspecialchars($coverImg) ?>');">
                         <span class="category-badge"><?= htmlspecialchars($row['categoryName'] ?? 'Training') ?></span>

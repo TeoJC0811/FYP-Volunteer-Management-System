@@ -131,7 +131,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['withdraw_event'])) {
     }
 }
 
-$imagePath = !empty($event['coverImage']) ? 'uploads/event_cover/' . $event['coverImage'] : 'https://via.placeholder.com/600x350';
+$dbCover = $event['coverImage'] ?? '';
+$imagePath = 'https://via.placeholder.com/600x350'; // Default
+if (!empty($dbCover)) {
+    $imagePath = (strpos($dbCover, 'http') === 0) ? $dbCover : 'uploads/event_cover/' . basename($dbCover);
+}
 
 /* ✅ Participant Count */
 $sqlCount = $conn->prepare("SELECT COUNT(*) AS total FROM eventregistration WHERE eventID = ? AND registrationStatus = 'active'");
@@ -309,22 +313,26 @@ $pastEvents = $pastStmt->get_result()->fetch_all(MYSQLI_ASSOC);
             <h4>Photo Gallery</h4>
             <?php if (!empty($galleryImages)): ?>
             <div class="gallery-grid">
-                <?php foreach ($galleryImages as $i => $photo): ?>
-                    <?php if ($i < 3): ?>
-                        <div class="photo-box"><img src="<?= htmlspecialchars($photo['imageUrl']) ?>" onclick="showLightbox(<?= $i ?>)"></div>
-                    <?php elseif ($i === 3): ?>
-                        <div class="photo-box" onclick="showLightbox(<?= $i ?>)">
-                            <img src="<?= htmlspecialchars($photo['imageUrl']) ?>">
-                            <div class="overlay"><i class="fa-solid fa-magnifying-glass-plus"></i> View All</div>
-                        </div>
-                        <?php break; ?>
-                    <?php endif; ?>
-                <?php endforeach; ?>
+                <?php foreach ($galleryImages as $i => $photo): 
+    $dbGallery = $photo['imageUrl'] ?? '';
+    // Smart Check: Use URL directly if it starts with http
+    $finalGalleryUrl = (strpos($dbGallery, 'http') === 0) ? $dbGallery : 'uploads/gallery/' . basename($dbGallery);
+?>
+    <?php if ($i < 3): ?>
+        <div class="photo-box"><img src="<?= htmlspecialchars($finalGalleryUrl) ?>" onclick="showLightbox(<?= $i ?>)"></div>
+    <?php elseif ($i === 3): ?>
+        <div class="photo-box" onclick="showLightbox(<?= $i ?>)">
+            <img src="<?= htmlspecialchars($finalGalleryUrl) ?>">
+            <div class="overlay"><i class="fa-solid fa-magnifying-glass-plus"></i> View All</div>
+        </div>
+        <?php break; ?>
+    <?php endif; ?>
+<?php endforeach; ?>
             </div>
             <?php endif; ?>
         </div>
         <div class="event-map">
-            <iframe src="https://www.google.com/maps?q=<?= urlencode($event['eventLocation'].','.$event['eventCountry']) ?>&output=embed" width="100%" height="300" style="border:0;" allowfullscreen></iframe>
+            <iframe src="https://maps.google.com/maps?q=<?= urlencode($event['eventLocation'] . ',' . $event['eventCountry']) ?>&t=&z=13&ie=UTF8&iwloc=&output=embed" width="100%" height="300" style="border:0;" allowfullscreen loading="lazy"></iframe>
         </div>
     </div>
 
@@ -353,7 +361,12 @@ $pastEvents = $pastStmt->get_result()->fetch_all(MYSQLI_ASSOC);
         <h3>Related Past Events</h3>
         <div class="past-event-list">
             <?php foreach ($pastEvents as $past): 
-                $pImg = !empty($past['coverImage']) ? 'uploads/event_cover/'.$past['coverImage'] : 'https://via.placeholder.com/150x100';
+                $dbPast = $past['coverImage'] ?? '';
+// Smart Check for the past event thumbnails
+$pImg = (strpos($dbPast, 'http') === 0) ? $dbPast : 'uploads/event_cover/' . basename($dbPast);
+if (empty($dbPast)) {
+    $pImg = 'https://via.placeholder.com/150x100';
+}
             ?>
                 <a href="event_detail.php?id=<?= $past['eventID'] ?>" class="past-event-card">
                     <img src="<?= htmlspecialchars($pImg) ?>" alt="Past">

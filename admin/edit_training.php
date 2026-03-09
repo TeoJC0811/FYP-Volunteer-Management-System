@@ -46,9 +46,13 @@ if (isset($_GET['delete_img'])) {
     $imgRes = $checkImg->get_result();
     
     if ($row = $imgRes->fetch_assoc()) {
-        $filePath = "../" . $row['imageUrl'];
-        if (file_exists($filePath)) unlink($filePath);
-        $del = $conn->prepare("DELETE FROM activitygallery WHERE galleryID = ?");
+    $dbPath = $row['imageUrl'];
+    // Only delete from disk if it's a local file (doesn't start with http)
+    if (strpos($dbPath, 'http') !== 0) {
+        $fullLocalPath = "../" . $dbPath;
+        if (file_exists($fullLocalPath)) unlink($fullLocalPath);
+    }
+    $del = $conn->prepare("DELETE FROM activitygallery WHERE galleryID = ?");
         $del->bind_param("i", $imgID);
         if ($del->execute()) {
             $message = "✅ Image deleted successfully!";
@@ -187,11 +191,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         /* COVER IMAGE */
         $coverImageName = $course['coverImage'];
         if (!empty($_FILES['coverImage']['name'])) {
-            $ext = pathinfo($_FILES['coverImage']['name'], PATHINFO_EXTENSION);
-            $coverImageName = time() . "_cover." . $ext;
-            $uploadDir = "../uploads/course_cover/"; 
-            if (!is_dir($uploadDir)) { mkdir($uploadDir, 0777, true); }
-            move_uploaded_file($_FILES['coverImage']['tmp_name'], $uploadDir . $coverImageName);
+            // ✅ Upload to Cloudinary
+            $upload = (new UploadApi())->upload($_FILES['coverImage']['tmp_name'], [
+                'folder' => 'course_covers'
+            ]);
+            $coverImageName = $upload['secure_url']; // Save the full secure URL
         }
 
         /* CERTIFICATE PDF UPLOAD */
@@ -247,12 +251,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     foreach ($_FILES['galleryImages']['tmp_name'] as $i => $tmpName) {
                         if ($_FILES['galleryImages']['error'][$i] == 0) {
-                            $fileName = time() . "_" . basename($_FILES['galleryImages']['name'][$i]);
-                            move_uploaded_file($tmpName, $uploadGalleryDir . $fileName);
-                            $imgPath = "uploads/course_gallery/" . $fileName;
+                            // ✅ Upload to Cloudinary
+                            $uploadG = (new UploadApi())->upload($tmpName, [
+                                'folder' => 'course_gallery'
+                            ]);
+                            $imgPath = $uploadG['secure_url'];
                             
-                            $g = $conn->prepare("INSERT INTO activitygallery (activityID, activityType, imageUrl) VALUES (?, ?, ?)");
-                            $g->bind_param("iss", $courseID, $activityTypeLabel, $imgPath);
+                            $g = $conn->prepare("INSERT INTO activitygallery (activityID, activityType, imageUrl) VALUES (?, 'course', ?)");
+                            $g->bind_param("is", $courseID, $imgPath);
                             $g->execute();
                         }
                     }
@@ -356,7 +362,10 @@ button[onclick="openModal()"] { background:#6c5ce7; margin-top:5px; }
             
             <label>Current Cover Image</label>
             <?php if (!empty($course['coverImage'])): ?>
-                <img src="../uploads/course_cover/<?= $course['coverImage'] ?>" style="width:100%; max-height:250px; object-fit:cover; border-radius:8px; margin-bottom:10px;">
+                <?php 
+    $displayCover = (strpos($course['coverImage'], 'http') === 0) ? $course['coverImage'] : "../uploads/course_cover/" . $course['coverImage'];
+?>
+<img src="<?= $displayCover ?>" style="width:100%; max-height:250px; object-fit:cover; border-radius:8px; margin-bottom:10px;">
             <?php endif; ?>
 
             <label>Replace Cover Image</label>
@@ -372,7 +381,11 @@ button[onclick="openModal()"] { background:#6c5ce7; margin-top:5px; }
                         <a href="edit_training.php?id=<?= $courseID ?>&delete_img=<?= $row['galleryID'] ?>" 
                            class="btn-del-img" 
                            onclick="return confirm('Delete this image?')">×</a>
-                        <img src="../<?= $row['imageUrl'] ?>">
+                        <?php 
+    $dbImg = $row['imageUrl'];
+    $displayImg = (strpos($dbImg, 'http') === 0) ? $dbImg : "../" . $dbImg;
+?>
+<img src="<?= $displayImg ?>">
                     </div>
                 <?php endwhile; ?>
             </div>

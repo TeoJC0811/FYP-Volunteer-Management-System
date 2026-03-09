@@ -269,7 +269,12 @@ body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f4f7f6; m
         <?php while ($row = $result->fetch_assoc()): ?>
         <div class="reward-card">
             <?php if (!empty($row['rewardImage'])): ?>
-                <img src="../<?= htmlspecialchars($row['rewardImage']) ?>" class="reward-img" alt="Reward">
+                <?php 
+    $dbImg = $row['rewardImage'] ?? '';
+    // Smart Check: Use URL directly if it's Cloudinary (http), otherwise add local prefix
+    $displayImg = (strpos($dbImg, 'http') === 0) ? $dbImg : "../" . $dbImg;
+?>
+<img src="<?= htmlspecialchars($displayImg) ?>" class="reward-img" alt="Reward">
             <?php else: ?>
                 <div class="reward-img" style="display:flex; align-items:center; justify-content:center; color:#ccc;">
                     <i class="fas fa-image fa-3x"></i>

@@ -311,7 +311,13 @@ $result = $stmt->get_result();
 
             <td>
                 <?php if (!empty($row['receiptImage'])): ?>
-                    <a href="/servetogether/<?= htmlspecialchars($row['receiptImage']); ?>" target="_blank" class="btn-view-receipt">
+                    <?php 
+    $dbReceipt = $row['receiptImage'] ?? '';
+    // If it's a Cloudinary/External link, use it directly. 
+    // Otherwise, use a relative path to the local uploads folder.
+    $receiptLink = (strpos($dbReceipt, 'http') === 0) ? $dbReceipt : "../" . $dbReceipt;
+?>
+<a href="<?= htmlspecialchars($receiptLink); ?>" target="_blank" class="btn-view-receipt">
                         <i class="fas fa-file-invoice"></i> View Receipt
                     </a>
                 <?php else: ?>

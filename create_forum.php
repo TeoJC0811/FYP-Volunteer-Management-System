@@ -33,7 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $allowTypes = array('jpg', 'png', 'jpeg', 'gif');
         if (in_array(strtolower($fileType), $allowTypes)) {
             if (move_uploaded_file($_FILES["forumImage"]["tmp_name"], $targetFilePath)) {
-                $forumImage = $targetFilePath;
+                // ✅ SAVE ONLY THE FILENAME, NOT THE WHOLE PATH
+                $forumImage = $fileName; 
             }
         }
     }
@@ -256,7 +257,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         e.preventDefault();
         const files = e.dataTransfer.files;
         if (files.length > 0) {
-            fileInput.files = files;
+            // ✅ Use the DataTransfer constructor for maximum compatibility
+            const dt = new DataTransfer();
+            dt.items.add(files[0]);
+            fileInput.files = dt.files; 
+            
             showPreview(files[0]);
         }
     });

@@ -44,13 +44,14 @@ if (isset($_GET['delete_img'])) {
     $imgRes = $checkImg->get_result();
     
     if ($row = $imgRes->fetch_assoc()) {
-        $filePath = "../" . $row['imageUrl'];
-        if (file_exists($filePath)) unlink($filePath);
-        $del = $conn->prepare("DELETE FROM activitygallery WHERE galleryID = ?");
-        $del->bind_param("i", $imgID);
-        if ($del->execute()) {
-            $message = "✅ Image deleted successfully!";
-        }
+    $dbPath = $row['imageUrl'];
+    // ✅ Only try to delete from local disk if it's NOT a cloud URL
+    if (strpos($dbPath, 'http') !== 0) {
+        $fullLocalPath = "../" . $dbPath;
+        if (file_exists($fullLocalPath)) unlink($fullLocalPath);
+    }
+    
+    $del = $conn->prepare("DELETE FROM activitygallery WHERE galleryID = ?");
     }
 }
 
@@ -191,14 +192,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         /* COVER IMAGE */
         $coverImageName = $event['coverImage']; 
-        $uploadDir = "../uploads/event_cover/"; 
-        if (!is_dir($uploadDir)) { mkdir($uploadDir, 0777, true); }
-
-        if (!empty($_FILES['coverImage']['name'])) {
-            $ext = pathinfo($_FILES['coverImage']['name'], PATHINFO_EXTENSION);
-            $coverImageName = time() . "_cover." . $ext;
-            move_uploaded_file($_FILES['coverImage']['tmp_name'], $uploadDir . $coverImageName);
-        }
+if (!empty($_FILES['coverImage']['name'])) {
+    // Upload to Cloudinary
+    $upload = (new UploadApi())->upload($_FILES['coverImage']['tmp_name'], [
+        'folder' => 'event_covers'
+    ]);
+    // Save the full secure URL instead of just a filename
+    $coverImageName = $upload['secure_url']; 
+}
 
         /* CERTIFICATE PDF UPLOAD */
         $certName = $event['certificate_template'];
@@ -246,20 +247,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 /* UPLOAD NEW GALLERY IMAGES */
                 if (!empty($_FILES['galleryImages']['name'][0])) {
-                    $uploadGalleryDir = "../uploads/event_gallery/"; 
-                    if (!is_dir($uploadGalleryDir)) { mkdir($uploadGalleryDir, 0777, true); }
-                    
-                    foreach ($_FILES['galleryImages']['tmp_name'] as $i => $tmpName) {
-                        if ($_FILES['galleryImages']['error'][$i] == 0) {
-                            $fileName = time() . "_" . basename($_FILES['galleryImages']['name'][$i]);
-                            move_uploaded_file($tmpName, $uploadGalleryDir . $fileName);
-                            $imgPath = "uploads/event_gallery/" . $fileName;
-                            $g = $conn->prepare("INSERT INTO activitygallery (activityID, activityType, imageUrl) VALUES (?, 'event', ?)");
-                            $g->bind_param("is", $eventID, $imgPath);
-                            $g->execute();
-                        }
-                    }
-                }
+    foreach ($_FILES['galleryImages']['tmp_name'] as $i => $tmpName) {
+        if ($_FILES['galleryImages']['error'][$i] == 0) {
+            // Upload each gallery image to Cloudinary
+            $uploadG = (new UploadApi())->upload($tmpName, [
+                'folder' => 'event_gallery'
+            ]);
+            $imgPath = $uploadG['secure_url'];
+            
+            $g = $conn->prepare("INSERT INTO activitygallery (activityID, activityType, imageUrl) VALUES (?, 'event', ?)");
+            $g->bind_param("is", $eventID, $imgPath);
+            $g->execute();
+        }
+    }
+}
                 header("Location: edit_event.php?id=$eventID&msg=updated");
                 exit();
             } else {
@@ -357,9 +358,11 @@ $galleryResult = $gallery->get_result();
             <textarea name="description" required><?= htmlspecialchars($event['description']) ?></textarea>
 
             <label>Current Cover Image</label>
-            <?php if ($event['coverImage']): ?>
-                <img src="../uploads/event_cover/<?= $event['coverImage'] ?>" style="width:100%; max-height:250px; object-fit:cover; border-radius:8px; margin-bottom:10px;">
-            <?php endif; ?>
+            <?php if ($event['coverImage']): 
+    $displayCover = (strpos($event['coverImage'], 'http') === 0) ? $event['coverImage'] : "../uploads/event_cover/" . $event['coverImage'];
+?>
+    <img src="<?= $displayCover ?>" style="width:100%; max-height:250px; object-fit:cover; border-radius:8px; margin-bottom:10px;">
+<?php endif; ?>
 
             <label>Replace Cover Image</label>
             <input type="file" name="coverImage" accept="image/*">
@@ -374,7 +377,11 @@ $galleryResult = $gallery->get_result();
                         <a href="edit_event.php?id=<?= $eventID ?>&delete_img=<?= $row['galleryID'] ?>" 
                            class="btn-del-img" 
                            onclick="return confirm('Delete this image?')">×</a>
-                        <img src="../<?= $row['imageUrl'] ?>">
+                        <?php 
+    $dbImg = $row['imageUrl'];
+    $displayImg = (strpos($dbImg, 'http') === 0) ? $dbImg : "../" . $dbImg;
+?>
+<img src="<?= $displayImg ?>">
                     </div>
                 <?php endwhile; ?>
             </div>

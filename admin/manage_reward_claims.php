@@ -239,7 +239,12 @@ $status_error   = h($_GET['error'] ?? null);
                 <div class="claim-card">
                     <div>
                         <div class="card-header">
-                            <img src="../<?= h($row['rewardImage']) ?>" class="reward-thumbnail">
+                            <?php 
+    $dbImg = $row['rewardImage'] ?? '';
+    // If it starts with http, use it directly. Otherwise, add the local path prefix.
+    $displayImg = (strpos($dbImg, 'http') === 0) ? $dbImg : "../" . $dbImg;
+?>
+<img src="<?= h($displayImg) ?>" class="reward-thumbnail">
                             <div>
                                 <strong><?= h($row['rewardName']) ?></strong>
                                 <p style="font-size: 0.9em; color: #555;">ID: <?= h($row['claimID']) ?></p>

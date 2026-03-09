@@ -144,7 +144,15 @@ h2 { margin-bottom: 25px; text-align: center; color: #222; font-size: 28px; }
             <div class="card-wrapper">
                 <?php while ($row = $resultEvent->fetch_assoc()): ?>
                     <?php
-                        $eventImage = !empty($row['eventImage']) ? 'uploads/event_cover/' . $row['eventImage'] : 'https://via.placeholder.com/360x220/007bff/ffffff?text=Event+Cover';
+                        $dbImage = $row['eventImage'] ?? '';
+                        
+                        // SMART CHECK for Event Image
+                        if (!empty($dbImage) && strpos($dbImage, 'http') === 0) {
+                            $eventImage = $dbImage;
+                        } else {
+                            $eventImage = !empty($dbImage) ? 'uploads/event_cover/' . basename($dbImage) : 'https://via.placeholder.com/360x220/007bff/ffffff?text=Event+Cover';
+                        }
+
                         $timeRemaining = daysRemaining($row['endDate']);
                         $isExpired = ($timeRemaining === "Expired");
                         $dateDisplay = ($row['startDate'] === $row['endDate']) ? date('d M Y', strtotime($row['startDate'])) : date('d M Y', strtotime($row['startDate'])) . " - " . date('d M Y', strtotime($row['endDate']));
@@ -182,18 +190,27 @@ h2 { margin-bottom: 25px; text-align: center; color: #222; font-size: 28px; }
         <?php endif; ?>
     </div>
 
-    <div id="courseTab" class="tabContent">
-        <?php if ($resultCourse->num_rows > 0): ?>
-            <div class="card-wrapper">
-                <?php while ($row = $resultCourse->fetch_assoc()): ?>
-                    <?php
-                        $courseImage = !empty($row['courseImage']) ? 'uploads/course_cover/' . $row['courseImage'] : 'https://via.placeholder.com/360x220/2575fc/ffffff?text=Course+Cover';
-                        $timeRemaining = daysRemaining($row['endDate']);
-                        $isExpired = ($timeRemaining === "Expired");
-                        $dateDisplay = ($row['startDate'] === $row['endDate']) ? date('d M Y', strtotime($row['startDate'])) : date('d M Y', strtotime($row['startDate'])) . " - " . date('d M Y', strtotime($row['endDate']));
-                    ?>
-                    <div class="wishlist-item <?= $isExpired ? 'expired' : '' ?>">
-                        <div class="wishlist-header" style="background-image:url('<?= htmlspecialchars($courseImage) ?>');">
+   <div id="courseTab" class="tabContent">
+    <?php if ($resultCourse->num_rows > 0): ?>
+        <div class="card-wrapper">
+            <?php while ($row = $resultCourse->fetch_assoc()): ?>
+                <?php
+                    $dbImage = $row['courseImage'] ?? '';
+                    
+                    // ✅ SMART CHECK for Course Image
+                    if (!empty($dbImage) && strpos($dbImage, 'http') === 0) {
+                        $courseImage = $dbImage;
+                    } else {
+                        // Legacy local fallback
+                        $courseImage = !empty($dbImage) ? 'uploads/course_cover/' . basename($dbImage) : 'https://via.placeholder.com/360x220/2575fc/ffffff?text=Course+Cover';
+                    }
+
+                    $timeRemaining = daysRemaining($row['endDate']);
+                    $isExpired = ($timeRemaining === "Expired");
+                    $dateDisplay = ($row['startDate'] === $row['endDate']) ? date('d M Y', strtotime($row['startDate'])) : date('d M Y', strtotime($row['startDate'])) . " - " . date('d M Y', strtotime($row['endDate']));
+                ?>
+                <div class="wishlist-item <?= $isExpired ? 'expired' : '' ?>">
+                    <div class="wishlist-header" style="background-image:url('<?= htmlspecialchars($courseImage) ?>');">
                             <button class="wishlist-btn" onclick="removeWishlist(<?= $row['courseID'] ?>,'course',this)">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M2.5 1.5h11a.5.5 0 0 1 .5.5v12.8a.3.3 0 0 1-.45.26L8 12.5l-5.55 2.56a.3.3 0 0 1-.45-.26V2a.5.5 0 0 1 .5-.5z"/></svg>
                             </button>
