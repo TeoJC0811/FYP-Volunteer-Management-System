@@ -278,18 +278,19 @@ html, body {
 
         if ($result && $result->num_rows > 0):
             while ($row = $result->fetch_assoc()):
-                $cover = $row['coverImage'];
-                $imagePath = "https://via.placeholder.com/300x150";
+                $cover = $row['coverImage'] ?? '';
+                $imagePath = "https://via.placeholder.com/300x150"; // Default fallback
 
                 if (!empty($cover)) {
-                    $cover = str_replace("\\", "/", $cover); 
-                    if (strpos($cover, "uploads/event_cover/") !== false) {
+                    // Check if the path is already a full Cloudinary URL
+                    if (strpos($cover, 'http') === 0) {
                         $imagePath = $cover;
                     } else {
-                        $imagePath = "uploads/event_cover/" . basename($cover);
+                        // It is an old local file, clean the path and add the folder prefix
+                        $cleanCover = str_replace("\\", "/", $cover);
+                        $imagePath = "uploads/event_cover/" . basename($cleanCover);
                     }
                 }
-                
                 $isWishlisted = false;
                 if ($userID) {
                     $check = $conn->query("SELECT 1 FROM wishlist WHERE userID='".intval($userID)."' AND eventID='".$row['eventID']."' LIMIT 1");

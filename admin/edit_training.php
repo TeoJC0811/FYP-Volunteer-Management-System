@@ -2,6 +2,21 @@
 session_start();
 include("../db.php");
 
+// 1. Load Cloudinary dependencies
+require __DIR__ . '/../vendor/autoload.php';
+use Cloudinary\Configuration\Configuration;
+use Cloudinary\Api\Upload\UploadApi;
+
+// 2. Configure Cloudinary using Render Environment Variables
+Configuration::instance([
+    'cloud' => [
+        'cloud_name' => getenv('CLOUDINARY_CLOUD_NAME'),
+        'api_key'    => getenv('CLOUDINARY_API_KEY'),
+        'api_secret' => getenv('CLOUDINARY_API_SECRET')
+    ],
+    'url' => ['secure' => true]
+]);
+
 /* ==========================
     ACCESS CONTROL
 ========================== */
