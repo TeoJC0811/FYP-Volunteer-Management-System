@@ -3,7 +3,7 @@ session_start();
 include("../db.php");
 
 // 1. Load Cloudinary dependencies
-require 'vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 use Cloudinary\Configuration\Configuration;
 use Cloudinary\Api\Upload\UploadApi;
 
