@@ -196,7 +196,15 @@ $courseResult = $conn->query($courseQuery);
         if ($eventResult && $eventResult->num_rows > 0) {
             while ($event = $eventResult->fetch_assoc()) {
                 $cover = $event['coverImage'] ?? '';
-                $imagePath = "uploads/event_cover/" . htmlspecialchars(basename($cover));
+
+                // SMART CHECK: If the cover starts with 'http', it's from Cloudinary. 
+                // If not, it's an old local file from your uploads folder.
+                if (strpos($cover, 'http') === 0) {
+                    $imagePath = htmlspecialchars($cover);
+                } else {
+                    $imagePath = "uploads/event_cover/" . htmlspecialchars(basename($cover));
+                }
+
                 $title = htmlspecialchars($event['eventName']);
                 $fullAddress = htmlspecialchars($event['eventLocation'] . ", " . $event['eventCountry']);
                 

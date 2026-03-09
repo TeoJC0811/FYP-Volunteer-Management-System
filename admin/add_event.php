@@ -2,6 +2,21 @@
 session_start();
 include("../db.php");
 
+// 1. Load Cloudinary dependencies
+require 'vendor/autoload.php';
+use Cloudinary\Configuration\Configuration;
+use Cloudinary\Api\Upload\UploadApi;
+
+// 2. Configure Cloudinary using Render Environment Variables
+Configuration::instance([
+    'cloud' => [
+        'cloud_name' => getenv('CLOUDINARY_CLOUD_NAME'),
+        'api_key'    => getenv('CLOUDINARY_API_KEY'),
+        'api_secret' => getenv('CLOUDINARY_API_SECRET')
+    ],
+    'url' => ['secure' => true]
+]);
+
 // Only allow admins or organizers
 if (!isset($_SESSION['userID']) || !in_array($_SESSION['role'], ['admin', 'organizer'])) {
     header("Location: login.php");
@@ -10,7 +25,6 @@ if (!isset($_SESSION['userID']) || !in_array($_SESSION['role'], ['admin', 'organ
 
 $userID = $_SESSION['userID'];
 
-// UPDATED: Change success message to reflect the pending status
 $message = (isset($_GET['status']) && $_GET['status'] == 'success') 
     ? "✅ Event submitted! It will be visible to the public once an Admin approves it." 
     : "";
@@ -21,22 +35,17 @@ $categories = [];
 /* ==========================
     FETCH ENUMS & LISTS
 ========================== */
-// Get Country Enum
 $countryEnumResult = $conn->query("SHOW COLUMNS FROM event LIKE 'eventCountry'");
 if ($countryEnumResult && $countryRow = $countryEnumResult->fetch_assoc()) {
     preg_match_all("/'([^']+)'/", $countryRow['Type'], $matches);
     $countries = $matches[1] ?? [];
 }
 
-// Get Categories
 $resCat = $conn->query("SELECT categoryID, categoryName FROM category ORDER BY categoryName ASC");
 while ($row = $resCat->fetch_assoc()) {
     $categories[] = $row;
 }
 
-/* ==========================
-    FETCH ALL PAST EVENTS
-========================== */
 $pastEvents = [];
 $pe = $conn->query("SELECT eventID, eventName, startDate, endDate FROM event ORDER BY startDate DESC");
 while ($row = $pe->fetch_assoc()) {
@@ -61,9 +70,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $point            = intval($_POST['point']);
     $description      = trim($_POST['description']);
 
-    /* ==========================
-        READ CSV PAST EVENT IDS
-    ========================== */
     $selectedPastEvents = [];
     if (!empty($_POST['pastEvents'][0])) {
         $selectedPastEvents = explode(",", $_POST['pastEvents'][0]);
@@ -80,32 +86,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $dl    = new DateTime($deadline);
 
         $isError = false;
-        if ($start < $today) {
-            $error = "⚠️ Start date cannot be in the past.";
-            $isError = true;
-        }
-        elseif ($end < $start) {
-            $error = "⚠️ End date cannot be earlier than start.";
-            $isError = true;
-        }
-        elseif ($dl < $today) {
-            $error = "⚠️ Deadline cannot be in the past.";
-            $isError = true;
-        }
+        if ($start < $today) { $error = "⚠️ Start date cannot be in the past."; $isError = true; }
+        elseif ($end < $start) { $error = "⚠️ End date cannot be earlier than start."; $isError = true; }
+        elseif ($dl < $today) { $error = "⚠️ Deadline cannot be in the past."; $isError = true; }
 
         if (!$isError) {
-            /* COVER IMAGE */
-            $coverImageName = null;
-            if (!empty($_FILES['coverImage']['name'])) {
-                $ext = pathinfo($_FILES['coverImage']['name'], PATHINFO_EXTENSION);
-                $coverImageName = time() . "_cover." . $ext;
-                $uploadDir = "../uploads/event_cover/"; 
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0777, true);
-                }
-                if (!move_uploaded_file($_FILES['coverImage']['tmp_name'], $uploadDir . $coverImageName)) {
-                     $error = "❌ Failed to upload cover image.";
-                     $isError = true;
+            /* 3. CLOUDINARY COVER IMAGE UPLOAD */
+            $coverImageUrl = null;
+            if (!empty($_FILES['coverImage']['tmp_name'])) {
+                try {
+                    $uploadApi = new UploadApi();
+                    $uploadResponse = $uploadApi->upload($_FILES['coverImage']['tmp_name'], [
+                        'folder' => 'servetogether/event_covers'
+                    ]);
+                    $coverImageUrl = $uploadResponse['secure_url']; 
+                } catch (Exception $e) {
+                    $error = "❌ Cloudinary Error: " . $e->getMessage();
+                    $isError = true;
                 }
             } else {
                  $error = "❌ Cover image is required.";
@@ -114,7 +111,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
         if (!$isError) {
-            /* INSERT EVENT - Added status column set to 'pending' */
+            /* 4. INSERT EVENT (Using the Cloud URL) */
             $sql = "INSERT INTO event 
                     (eventName, coverImage, eventLocation, eventCountry, description,
                      startDate, startTime, endDate, endTime, deadline, participantNum, 
@@ -125,7 +122,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->bind_param(
                 "ssssssssssiiii",
                 $eventName,
-                $coverImageName,
+                $coverImageUrl,
                 $eventLocation,
                 $eventCountry,
                 $description,
@@ -143,7 +140,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($stmt->execute()) {
                 $newEventID = $stmt->insert_id;
 
-                /* SAVE PAST EVENT LINKING */
+                /* 5. SAVE PAST EVENT LINKING */
                 if (!empty($selectedPastEvents)) {
                     $insertPE = $conn->prepare("INSERT INTO eventpast (eventID, pastEventID) VALUES (?, ?)");
                     foreach ($selectedPastEvents as $peID) {
@@ -152,23 +149,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     }
                 }
 
-                /* UPLOAD GALLERY IMAGES */
-                if (!empty($_FILES['galleryImages']['name'][0])) {
-                    $uploadGalleryDir = "../uploads/event_gallery/"; 
-                    if (!is_dir($uploadGalleryDir)) {
-                        mkdir($uploadGalleryDir, 0777, true);
-                    }
-                    
+                /* 6. CLOUDINARY GALLERY IMAGES UPLOAD */
+                if (!empty($_FILES['galleryImages']['tmp_name'][0])) {
+                    $uploadApi = new UploadApi();
                     foreach ($_FILES['galleryImages']['tmp_name'] as $i => $tmpName) {
-                        $fileName = time() . "_" . basename($_FILES['galleryImages']['name'][$i]);
-                        move_uploaded_file($tmpName, $uploadGalleryDir . $fileName);
-                        $imgPath = "uploads/event_gallery/" . $fileName;
-                        $g = $conn->prepare("
-                            INSERT INTO activitygallery (activityID, activityType, imageUrl, caption)
-                            VALUES (?, 'event', ?, '')
-                        ");
-                        $g->bind_param("is", $newEventID, $imgPath);
-                        $g->execute();
+                        if (!empty($tmpName)) {
+                            try {
+                                $galleryResponse = $uploadApi->upload($tmpName, [
+                                    'folder' => 'servetogether/event_gallery'
+                                ]);
+                                $galleryUrl = $galleryResponse['secure_url'];
+
+                                $g = $conn->prepare("
+                                    INSERT INTO activitygallery (activityID, activityType, imageUrl, caption)
+                                    VALUES (?, 'event', ?, '')
+                                ");
+                                $g->bind_param("is", $newEventID, $galleryUrl);
+                                $g->execute();
+                            } catch (Exception $e) {
+                                error_log("Gallery upload failed: " . $e->getMessage());
+                            }
+                        }
                     }
                 }
 
