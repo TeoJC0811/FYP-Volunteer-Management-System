@@ -40,7 +40,6 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'admin') {
 }
 
 $target_page = "manage_reward_claims.php";
-// Removed N/A from array to handle it as a placeholder instead
 $deliveryCompanies = ['J&T Express', 'Pos Laju', 'FedEx', 'GDEX', 'DHL'];
 
 const SUPPORT_EMAIL = 'support@servetogether.com';
@@ -57,21 +56,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['update'])) {
     $deliveryAddress = trim((string)($_POST['deliveryAddress'] ?? '')); 
     
     $etaText         = trim((string)($_POST['etaText'] ?? '')); 
-    $deliveryCompany = trim((string)($_POST['deliveryCompany'] ?? '')); // Default to empty
+    $deliveryCompany = trim((string)($_POST['deliveryCompany'] ?? '')); 
     $trackingNumber  = trim((string)($_POST['trackingNumber'] ?? '')); 
 
     if (!$claimID || $status === '') {
         redirect_with_status($target_page, "error", "❌ Invalid Claim ID or status.");
     }
 
-    // --- CONDITIONAL BACKEND VALIDATION ---
+    // Check backend validation for Delivered status
     if ($status === 'Delivered') {
-        // If status is Delivered, company cannot be empty or 'N/A'
         if (empty($etaText) || empty($deliveryCompany) || $deliveryCompany === 'N/A' || empty($trackingNumber)) {
             redirect_with_status($target_page, "error", "❌ For 'Delivered' status, ETA, Carrier, and Tracking Number are required.");
         }
     }
 
+    // 1. Fetch current status and user info
     $stmt = $conn->prepare("
         SELECT rc.status, rc.userID, rc.rewardID, r.rewardName, r.pointRequired
         FROM rewardclaims rc
@@ -84,58 +83,69 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['update'])) {
     $stmt->fetch();
     $stmt->close();
     
-    $dbStatus = $dbStatus ?: "Pending";
+    $dbStatus = $dbStatus ?: "pending";
 
-    if (strcasecmp($dbStatus, 'Delivered') === 0 || strcasecmp($dbStatus, 'Rejected') === 0) {
+    // Prevent re-editing finalized claims
+    if (strcasecmp($dbStatus, 'delivered') === 0 || strcasecmp($dbStatus, 'rejected') === 0) {
         redirect_with_status($target_page, "error", "❌ This claim is finalized ($dbStatus) and cannot be modified.");
     }
 
-    $refunded = false;
-    if ($status === "Rejected") {
-        $updatePoints = $conn->prepare("UPDATE user SET totalPoints = totalPoints + ? WHERE userID = ?");
-        $updatePoints->bind_param("ii", $pointRequired, $targetUserID);
-        $updatePoints->execute();
-        $updatePoints->close();
-        $refunded = true;
-        // Set delivery info to N/A for database consistency if rejected
-        $etaText = $trackingNumber = "-";
-        $deliveryCompany = "N/A";
+    // START TRANSACTION
+    $conn->begin_transaction();
+
+    try {
+        $refunded = false;
+        if ($status === "Rejected") {
+            $updatePoints = $conn->prepare("UPDATE user SET totalPoints = totalPoints + ? WHERE userID = ?");
+            $updatePoints->bind_param("ii", $pointRequired, $targetUserID);
+            $updatePoints->execute();
+            $updatePoints->close();
+            $refunded = true;
+            $etaText = $trackingNumber = "-";
+            $deliveryCompany = "N/A";
+        }
+
+        // 2. Update the database (Using lowercase to match your ENUM: pending, delivered, rejected)
+        $dbStatusValue = strtolower($status);
+        $sql_update = "UPDATE rewardclaims SET status=?, recipientName=?, phoneNumber=?, deliveryAddress=?, etaText=?, deliveryCompany=?, trackingNumber=? WHERE claimID=?";
+        $stmt = $conn->prepare($sql_update);
+        $stmt->bind_param("sssssssi", $dbStatusValue, $recipientName, $phoneNumber, $deliveryAddress, $etaText, $deliveryCompany, $trackingNumber, $claimID);
+        $stmt->execute();
+        $stmt->close();
+
+        // 3. Prepare Notification Message
+        if ($status === 'Rejected') {
+            $msg = "❌ <b>Claim Rejected: " . h($rewardName) . "</b><br>";
+            $msg .= "Points Refunded: <b>" . $pointRequired . " points</b>.<br>";
+        } else {
+            // Include link to PDF Billing (Standardizes with your course logic)
+            $billingUrl = "admin/generate_reward_billing.php?claimID=" . $claimID;
+            
+            $msg = "📢 <b>Update for your reward: " . h($rewardName) . "</b><br>";
+            $msg .= "New Status: <b>" . h($status) . "</b><br>";
+            
+            if ($status === 'Delivered') {
+                $msg .= "🚚 Carrier: " . h($deliveryCompany) . " | Tracking: <b>" . h($trackingNumber) . "</b><br>";
+                $msg .= "<a href='{$billingUrl}' target='_blank' style='color:#2ecc71; font-weight:bold;'>[View Official Receipt PDF]</a><br>";
+            }
+        }
+        $msg .= "<br>Support: " . SUPPORT_EMAIL;
+
+        // 4. Insert Notification (This fixes the 'reward' activityType error)
+        $n = $conn->prepare("INSERT INTO notification (userID, message, activityType, activityID, isRead, createdAt) VALUES (?, ?, 'reward', ?, 0, NOW())");
+        $n->bind_param("isi", $targetUserID, $msg, $claimID);
+        $n->execute(); 
+        $n->close();
+
+        $conn->commit();
+        $final_msg = "Status updated to " . $status . ".";
+        if ($refunded) $final_msg .= " Points refunded to user.";
+        redirect_with_status($target_page, "message", $final_msg);
+
+    } catch (Exception $e) {
+        $conn->rollback();
+        redirect_with_status($target_page, "error", "❌ Transaction Failed: " . $e->getMessage());
     }
-
-    $sql_update = "UPDATE rewardclaims SET status=?, recipientName=?, phoneNumber=?, deliveryAddress=?, etaText=?, deliveryCompany=?, trackingNumber=? WHERE claimID=?";
-    $stmt = $conn->prepare($sql_update);
-    $stmt->bind_param("sssssssi", $status, $recipientName, $phoneNumber, $deliveryAddress, $etaText, $deliveryCompany, $trackingNumber, $claimID);
-    
-    if (!$stmt->execute()) {
-        redirect_with_status($target_page, "error", "❌ Database error: " . $stmt->error);
-    }
-    $stmt->close();
-
-    // 4. NOTIFY USER
-    if ($status === 'Rejected') {
-        $msg = "❌ <b>Your claim for " . h($rewardName) . " has been rejected.</b><br>";
-        $msg .= "Unfortunately, we could not process your claim.<br>";
-        $msg .= "We have <b>returned " . $pointRequired . " points</b> to your account balance.<br>";
-    } else {
-        $msg = "📢 <b>Update for your reward claim:</b><br><br>";
-        $msg .= "Reward: <b>" . h($rewardName) . "</b><br>";
-        $msg .= "New Status: <b>" . h($status) . "</b><br>";
-        
-        if (!empty($etaText) && $etaText !== "-") $msg .= "Estimated Arrival: " . h($etaText) . "<br>";
-        if (!empty($deliveryCompany) && $deliveryCompany !== 'N/A') $msg .= "Carrier: " . h($deliveryCompany) . "<br>";
-        if (!empty($trackingNumber) && $trackingNumber !== "-") $msg .= "Tracking Number: <b>" . h($trackingNumber) . "</b><br>";
-    }
-    
-    $msg .= "<br>---<br>For support, contact us:<br>Email: " . SUPPORT_EMAIL . "<br>Phone: " . SUPPORT_PHONE;
-
-    $n = $conn->prepare("INSERT INTO notification (userID, message, activityType, activityID, isRead, createdAt) VALUES (?, ?, 'reward', ?, 0, NOW())");
-    $n->bind_param("isi", $targetUserID, $msg, $claimID);
-    $n->execute(); 
-    $n->close();
-
-    $final_msg = "Status updated to " . $status . ".";
-    if ($refunded) $final_msg .= " Points refunded to user.";
-    redirect_with_status($target_page, "message", $final_msg);
 }
 
 // --- HANDLE FILTERING & SEARCH ---
@@ -151,7 +161,7 @@ $sql_fetch = "
 ";
 
 if (!empty($filter_status)) {
-    $sql_fetch .= " AND rc.status = '" . $conn->real_escape_string($filter_status) . "'";
+    $sql_fetch .= " AND rc.status = '" . $conn->real_escape_string(strtolower($filter_status)) . "'";
 }
 if (!empty($search_query)) {
     $s = $conn->real_escape_string($search_query);
@@ -174,7 +184,6 @@ $status_error   = h($_GET['error'] ?? null);
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-    /* Styling for conditional required asterisks */
     .required-label::after { content: " *"; color: red; }
     #updateForm input[readonly] { background-color: #f7f7f7; cursor: not-allowed; border: 1px solid #ddd; }
     :root { --primary-color: #3f51b5; --success-color: #4caf50; --error-color: #f44336; --pending-color: #ff9800; --rejected-color: #f44336; --delivered-color: #4caf50; --border-radius: 8px; --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
@@ -220,9 +229,9 @@ $status_error   = h($_GET['error'] ?? null);
         <input type="text" name="search" placeholder="Search by recipient or user..." value="<?= h($search_query) ?>">
         <select name="filter_status">
             <option value="">All Statuses</option>
-            <option value="Pending" <?= $filter_status == 'Pending' ? 'selected' : '' ?>>Pending</option>
-            <option value="Delivered" <?= $filter_status == 'Delivered' ? 'selected' : '' ?>>Delivered</option>
-            <option value="Rejected" <?= $filter_status == 'Rejected' ? 'selected' : '' ?>>Rejected</option>
+            <option value="pending" <?= $filter_status == 'pending' ? 'selected' : '' ?>>Pending</option>
+            <option value="delivered" <?= $filter_status == 'delivered' ? 'selected' : '' ?>>Delivered</option>
+            <option value="rejected" <?= $filter_status == 'rejected' ? 'selected' : '' ?>>Rejected</option>
         </select>
         <button type="submit"><i class="fas fa-search"></i> Search</button>
         <a href="manage_reward_claims.php" class="btn-reset"><i class="fas fa-undo"></i> Clear</a>
@@ -240,11 +249,10 @@ $status_error   = h($_GET['error'] ?? null);
                     <div>
                         <div class="card-header">
                             <?php 
-    $dbImg = $row['rewardImage'] ?? '';
-    // If it starts with http, use it directly. Otherwise, add the local path prefix.
-    $displayImg = (strpos($dbImg, 'http') === 0) ? $dbImg : "../" . $dbImg;
-?>
-<img src="<?= h($displayImg) ?>" class="reward-thumbnail">
+                            $dbImg = $row['rewardImage'] ?? '';
+                            $displayImg = (strpos($dbImg, 'http') === 0) ? $dbImg : "../uploads/rewards/" . basename($dbImg);
+                            ?>
+                            <img src="<?= h($displayImg) ?>" class="reward-thumbnail">
                             <div>
                                 <strong><?= h($row['rewardName']) ?></strong>
                                 <p style="font-size: 0.9em; color: #555;">ID: <?= h($row['claimID']) ?></p>
@@ -254,7 +262,7 @@ $status_error   = h($_GET['error'] ?? null);
                         <p><i class="fas fa-calendar-alt"></i> <b>Claim Date:</b> <?= date('d M Y', strtotime($row['claimDate'])) ?></p>
                         <div class="card-action-row">
                             <?= renderStatusTag($row['status']) ?>
-                            <?php if (strcasecmp($row['status'], 'Pending') === 0): ?>
+                            <?php if (strcasecmp($row['status'], 'pending') === 0): ?>
                                 <button class="btn-manage-details" onclick="openModal(<?= $row['claimID'] ?>)">Manage Details</button>
                             <?php else: ?>
                                 <span style="font-style: italic; color: #888; font-size: 0.9em;">Finalized</span>
@@ -276,9 +284,9 @@ $status_error   = h($_GET['error'] ?? null);
             
             <label for="formStatus">Status</label>
             <select name="status" id="formStatus" required>
-                <option value="Pending">Pending</option>
-                <option value="Delivered">Delivered</option>
-                <option value="Rejected">Rejected</option>
+                <option value="pending">Pending</option>
+                <option value="delivered">Delivered</option>
+                <option value="rejected">Rejected</option>
             </select>
 
             <label>Recipient Name</label>
@@ -325,7 +333,7 @@ $status_error   = h($_GET['error'] ?? null);
     ];
 
     function toggleRequiredFields() {
-        const isDelivered = statusSelect.value === 'Delivered';
+        const isDelivered = statusSelect.value === 'delivered';
         deliveryFields.forEach(field => {
             if (isDelivered) {
                 field.input.setAttribute('required', 'required');
@@ -345,18 +353,17 @@ $status_error   = h($_GET['error'] ?? null);
         
         document.getElementById('modalClaimID').textContent = id;
         document.getElementById('formClaimID').value = id;
-        document.getElementById('formStatus').value = c.status || 'Pending';
+        document.getElementById('formStatus').value = c.status || 'pending';
         document.getElementById('formRecipientName').value = c.recipientName || ''; 
         document.getElementById('formPhoneNumber').value = c.phoneNumber || ''; 
         document.getElementById('formDeliveryAddress').value = c.deliveryAddress || ''; 
         document.getElementById('formEtaText').value = c.etaText || '';
 
-        // Reset Delivery Company logic
         const companySelect = document.getElementById('formDeliveryCompany');
         if (c.deliveryCompany && c.deliveryCompany !== 'N/A') {
             companySelect.value = c.deliveryCompany;
         } else {
-            companySelect.value = ""; // Shows placeholder
+            companySelect.value = "";
         }
 
         document.getElementById('formTrackingNumber').value = c.trackingNumber || ''; 
