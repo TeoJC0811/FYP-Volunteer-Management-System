@@ -59,9 +59,18 @@ if ($userID) {
 <nav>
     <div class="nav-left">
         <div class="nav-logo">
-            <a href="index.php">
-                <img src="https://your-cloudinary-url-com/ServeTogetherIcon1.png" alt="ServeTogether Logo" style="height:40px;">
-            </a>
+            <?php 
+    // This is the relative path for your localhost
+    $localLogo = "uploads/servetogether_foundation-removebg-preview.png";
+    
+    // Check if the logo should be loaded from a URL (Cloudinary) or locally
+    // If you haven't uploaded the logo to Cloudinary yet, use your local path.
+    $logoSrc = (file_exists($localLogo)) ? $localLogo : "uploads/servetogether_foundation-removebg-preview.png";
+?>
+
+<a href="index.php">
+    <img src="<?= $logoSrc ?>" alt="ServeTogether Logo" style="height:40px;">
+</a>
         </div>
         <div class="nav-links">
             <a href="volunteer_event.php">Volunteer Event</a>
