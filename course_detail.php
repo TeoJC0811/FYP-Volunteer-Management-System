@@ -350,9 +350,21 @@ if (empty($dbCover)) $imagePath = 'https://via.placeholder.com/600x350';
         </div>
 
         <div class="event-map">
-            <h4>Course Location</h4>
-            <iframe src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=<?= urlencode(($course['courseLocation'] ?? '') . ', ' . ($course['courseCountry'] ?? '')) ?>" width="100%" height="300" style="border:0;" allowfullscreen loading="lazy"></iframe>
-        </div>
+    <h4>Course Location</h4>
+    <?php 
+        // Build a clean address string
+        $fullAddress = ($course['courseLocation'] ?? '') . ', ' . ($course['courseCountry'] ?? '');
+        $mapUrl = "https://maps.google.com/maps?q=" . urlencode($fullAddress) . "&t=&z=15&ie=UTF8&iwloc=&output=embed";
+    ?>
+    <iframe 
+        width="100%" 
+        height="300" 
+        style="border:0; border-radius:10px;" 
+        src="<?= $mapUrl ?>" 
+        allowfullscreen 
+        loading="lazy">
+    </iframe>
+</div>
     </div>
 
     <?php if ($totalReviews > 0): ?>

@@ -158,12 +158,16 @@ $result = $stmt->get_result();
                         
                         <?php 
 $dbImg = $row['forumImage'] ?? '';
+$content = $row['content'] ?? ''; // Define $content from the database row
+
 // Smart Check: Use URL if it starts with http, otherwise add the forum_images path
 $displayImg = (strpos($dbImg, 'http') === 0) ? $dbImg : 'uploads/forum_images/' . basename($dbImg);
 
 if (!empty($dbImg)): ?>
     <img src="<?= htmlspecialchars($displayImg) ?>" class="forum-img-preview" alt="Forum Image">
-<?php elseif (!empty(trim($content))): ?>
+<?php endif; ?>
+
+<?php if (!empty(trim($content))): ?>
     <p class="post-excerpt"><?= nl2br(htmlspecialchars(substr($content, 0, 150))) ?>...</p> 
 <?php endif; ?>
 
