@@ -101,6 +101,7 @@ if ($userID) {
                 <a href="history.php">History</a>
                 <a href="schedule.php">Schedule</a>
                 <a href="wishlist.php">Wishlist</a>
+                <a href="reward_history.php">Reward Claims</a> 
 
                 <?php if ($isApprovedOrganizer): ?>
                     <a href="admin/index.php" style="color: #2ecc71; font-weight: bold;">Organizer Portal</a>
