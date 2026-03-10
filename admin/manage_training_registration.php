@@ -147,20 +147,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['update'])) {
                 $check->close();
 
                 if ($paymentStatus !== $currentPaymentStatus) {
-                    $pNotifMsg = "";
-                    if ($paymentStatus === 'approved') {
-                        $pNotifMsg = "💳 Your payment for the course <b>{$courseName}</b> has been <b>Approved</b>.";
-                    } elseif ($paymentStatus === 'rejected') {
-                        $pNotifMsg = "❌ Your payment for the course <b>{$courseName}</b> was <b>Rejected</b>. Your attendance is now <b>Cancelled</b>.";
-                    }
+    $pNotifMsg = "";
+    if ($paymentStatus === 'approved') {
+        // Link to your dynamic PDF generator
+        $billingUrl = "admin/generate_billing.php?registerID=" . $id;
+        
+        $pNotifMsg = "✅ Your payment for the course <b>{$courseName}</b> has been <b>Approved</b>. <br> 
+                      <a href='{$billingUrl}' target='_blank' style='color:#2ecc71; font-weight:bold;'>
+                      <i class='fas fa-file-pdf'></i> View Official Receipt (PDF)</a>";
+    } elseif ($paymentStatus === 'rejected') {
+        $pNotifMsg = "❌ Your payment for the course <b>{$courseName}</b> was <b>Rejected</b>. Your attendance is now <b>Cancelled</b>.";
+    }
 
-                    if ($pNotifMsg !== "") {
-                        $stmtPNotif = $conn->prepare("INSERT INTO notification (message, activityType, activityID, userID, isRead, createdAt) VALUES (?, 'course', ?, ?, 0, NOW())");
-                        $stmtPNotif->bind_param("sii", $pNotifMsg, $courseID_from_form, $participantID);
-                        $stmtPNotif->execute();
-                        $stmtPNotif->close();
-                    }
-                }
+    if ($pNotifMsg !== "") {
+        $stmtPNotif = $conn->prepare("INSERT INTO notification (message, activityType, activityID, userID, isRead, createdAt) VALUES (?, 'course', ?, ?, 0, NOW())");
+        $stmtPNotif->bind_param("sii", $pNotifMsg, $courseID_from_form, $participantID);
+        $stmtPNotif->execute();
+        $stmtPNotif->close();
+    }
+}
             }
 
             if ($newStatus === "Completed" && $currentStatus !== "Completed") {
